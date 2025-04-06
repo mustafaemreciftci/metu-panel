@@ -1,0 +1,1116 @@
+"use client";
+
+import React from "react";
+import moment from "moment";
+import ReactModal from "react-modal";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import { FaRegSave } from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
+import { useRouter } from "next/navigation";
+import Creatable from "react-select/creatable";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+
+// components
+import Header from "@root/components/Header";
+
+// styles
+import "../styles/room.css";
+
+// utils
+import "moment/locale/tr.js";
+import { API } from "@root/utils/API";
+import { colors } from "@root/utils/colors";
+
+// library styles
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+const rooms = [];
+const roomsExtra = [];
+const instructors = [];
+
+const localizer = momentLocalizer(moment);
+
+export default function Room() {
+  const router = useRouter();
+
+  const handleAuth = async () => {
+    const res = await API.getMeetingEvents();
+
+    if (res.loggedIn === false) {
+      router.push("/login");
+    }
+  };
+
+  React.useEffect(() => {
+    handleAuth();
+  }, []);
+
+  const [filterRoom, setFilterRoom] = React.useState(null);
+  const [filterInstructor, setFilterInstructor] = React.useState(null);
+
+  const [events, setEvents] = React.useState([]);
+  const [filterEvents, setFilterEvents] = React.useState(null);
+
+  const [eventDeleteID, setEventDeleteID] = React.useState(null);
+  const [eventDeleteDate, setEventDeleteDate] = React.useState(null);
+  const [deleteEventModalVisible, setDeleteEventModalVisible] =
+    React.useState(false);
+
+  const [room, setRoom] = React.useState(null);
+  const [isMain, setIsMain] = React.useState(false);
+  const [endTime, setEndTime] = React.useState(null);
+  const [startTime, setStartTime] = React.useState(null);
+  const [endDate, setEndDate] = React.useState(new Date());
+  const [description, setDescription] = React.useState("");
+  const [instructor, setInstructor] = React.useState(null);
+  const [recurrence, setRecurrence] = React.useState(null);
+  const [startDate, setStartDate] = React.useState(new Date());
+
+  const [updateRoom, setUpdateRoom] = React.useState(null);
+  const [updateIsMain, setUpdateIsMain] = React.useState(false);
+  const [updateEndTime, setUpdateEndTime] = React.useState(null);
+  const [updateStartTime, setUpdateStartTime] = React.useState(null);
+  const [updateEndDate, setUpdateEndDate] = React.useState(new Date());
+  const [updateDescription, setUpdateDescription] = React.useState("");
+  const [updateInstructor, setUpdateInstructor] = React.useState(null);
+  const [updateRecurrence, setUpdateRecurrence] = React.useState(null);
+  const [updateStartDate, setUpdateStartDate] = React.useState(new Date());
+
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  const handleData = async () => {
+    const _instructorsResponse = await API.getInstructors();
+    const _meetingRoomsResponse = await API.getMeetingRooms();
+
+    for (
+      let _instructorIndex = 0;
+      _instructorIndex < _instructorsResponse.length;
+      _instructorIndex++
+    ) {
+      instructors.push({
+        value: JSON.stringify(_instructorIndex),
+        label: _instructorsResponse[_instructorIndex].name,
+      });
+    }
+
+    for (
+      let _meetingRoomIndex = 0;
+      _meetingRoomIndex < _meetingRoomsResponse.length;
+      _meetingRoomIndex++
+    ) {
+      rooms.push({
+        value: JSON.stringify(_meetingRoomIndex),
+        label: _meetingRoomsResponse[_meetingRoomIndex].name,
+      });
+
+      roomsExtra.push({
+        value: JSON.stringify(_meetingRoomIndex),
+        label:
+          _meetingRoomsResponse[_meetingRoomIndex].name +
+          " | Kapasite: " +
+          _meetingRoomsResponse[_meetingRoomIndex].capacity,
+      });
+    }
+  };
+
+  const handleMeetingEvents = async () => {
+    const _events = [];
+    const response = await API.getMeetingEvents();
+
+    if (response.length > 0) {
+      for (let _event of response) {
+        const daysInBetween = moment(_event.end_date).diff(
+          _event.start_date,
+          "days"
+        );
+
+        const exclude_dates = [];
+
+        if (_event.exclude_dates !== null) {
+          for (const _date of _event.exclude_dates) {
+            exclude_dates.push(moment(_date).format("YYYY-MM-DD"));
+          }
+        }
+
+        if (_event.recurrence === "d" || _event.recurrence === "o") {
+          for (let i = 0; i <= parseInt(daysInBetween); i += 1) {
+            if (
+              !exclude_dates.includes(
+                moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
+              )
+            ) {
+              _events.push({
+                id: _event.id,
+                title: _event.instructor + " - " + _event.room,
+                start: moment(_event.start_date)
+                  .add(i, "days")
+                  .set({
+                    hours: _event.start_time.slice(0, 2),
+                    minutes: _event.start_time.slice(3, 5),
+                  })
+                  .toDate(),
+                end: moment(_event.start_date)
+                  .add(i, "days")
+                  .set({
+                    hour: parseInt(_event.end_time.slice(0, 2)),
+                    minute: parseInt(_event.end_time.slice(3, 5)),
+                  })
+                  .toDate(),
+                room: _event.room,
+                instructor: _event.instructor,
+                is_main: _event.is_main,
+              });
+            }
+          }
+        } else if (_event.recurrence === "w") {
+          for (let i = 0; i < Math.ceil(daysInBetween / 7); i++) {
+            if (
+              !exclude_dates.includes(
+                moment(_event.start_date)
+                  .add(i * 7, "days")
+                  .format("YYYY-MM-DD")
+              )
+            ) {
+              _events.push({
+                id: _event.id,
+                title: _event.instructor + " - " + _event.room,
+                start: moment(_event.start_date)
+                  .add(i * 7, "days")
+                  .set({
+                    hours: _event.start_time.slice(0, 2),
+                    minutes: _event.start_time.slice(3, 5),
+                  })
+                  .toDate(),
+                end: moment(_event.start_date)
+                  .add(i * 7, "days")
+                  .set({
+                    hour: parseInt(_event.end_time.slice(0, 2)),
+                    minute: parseInt(_event.end_time.slice(3, 5)),
+                  })
+                  .toDate(),
+                room: _event.room,
+                instructor: _event.instructor,
+                is_main: _event.is_main,
+              });
+            }
+          }
+        } else if (_event.recurrence === "m") {
+          for (let i = 0; i < Math.ceil(daysInBetween / 30); i++) {
+            if (
+              !exclude_dates.includes(
+                moment(_event.start_date)
+                  .add(i * 30, "days")
+                  .format("YYYY-MM-DD")
+              )
+            ) {
+              _events.push({
+                id: _event.id,
+                title: _event.instructor + " - " + _event.room,
+                start: moment(_event.start_date)
+                  .add(i * 30, "days")
+                  .set({
+                    hours: _event.start_time.slice(0, 2),
+                    minutes: _event.start_time.slice(3, 5),
+                  })
+                  .toDate(),
+                end: moment(_event.start_date)
+                  .add(i * 30, "days")
+                  .set({
+                    hour: parseInt(_event.end_time.slice(0, 2)),
+                    minute: parseInt(_event.end_time.slice(3, 5)),
+                  })
+                  .toDate(),
+                room: _event.room,
+                instructor: _event.instructor,
+                is_main: _event.is_main,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    setEvents(_events);
+  };
+
+  React.useEffect(() => {
+    handleData();
+    handleMeetingEvents();
+  }, []);
+
+  const handleFilterEvents = () => {
+    const _filterEvents = [];
+
+    if (filterRoom !== null || filterInstructor !== null) {
+      if (filterRoom !== null && filterInstructor !== null) {
+        for (let _event of events) {
+          if (
+            _event.room === filterRoom &&
+            _event.instructor === filterInstructor
+          ) {
+            _filterEvents.push(_event);
+          }
+        }
+      } else if (filterRoom === null && filterInstructor !== null) {
+        for (let _event of events) {
+          if (_event.instructor === filterInstructor) {
+            _filterEvents.push(_event);
+          }
+        }
+      } else if (filterRoom !== null && filterInstructor === null) {
+        for (let _event of events) {
+          if (_event.room === filterRoom) {
+            _filterEvents.push(_event);
+          }
+        }
+      }
+
+      setFilterEvents(_filterEvents);
+    } else {
+      setFilterEvents(null);
+    }
+  };
+
+  React.useEffect(() => {
+    handleFilterEvents();
+  }, [filterRoom, filterInstructor]);
+
+  const onSelectEvent = (event) => {
+    setEventDeleteID(event.id);
+    setEventDeleteDate(moment(event.start).format("YYYY-MM-DD"));
+
+    setDeleteEventModalVisible(true);
+  };
+
+  return (
+    <div id="room-container">
+      <Header />
+
+      <div id="room-filter-row">
+        <div id="room-filter-select">
+          <Creatable
+            onChange={(data) => {
+              if (data.label === "Hepsi") {
+                setFilterRoom(null);
+              } else {
+                setFilterRoom(data.label);
+              }
+            }}
+            value={{ label: filterRoom === null ? "Yer" : filterRoom }}
+            placeholder={"Yer"}
+            options={rooms}
+            styles={{
+              menu: (styles) => ({
+                ...styles,
+                zIndex: 99,
+              }),
+            }}
+          />
+        </div>
+
+        <div id="room-filter-select" style={{ marginLeft: "2vw" }}>
+          <Creatable
+            onChange={(data) => {
+              if (data.label === "Hepsi") {
+                setFilterInstructor(null);
+              } else {
+                setFilterInstructor(data.label);
+              }
+            }}
+            value={{
+              label: filterInstructor === null ? "Hoca" : filterInstructor,
+            }}
+            placeholder={"Hoca"}
+            options={instructors}
+            styles={{
+              menu: (styles) => ({
+                ...styles,
+                zIndex: 99,
+              }),
+            }}
+          />
+        </div>
+
+        <button
+          onClick={() => {
+            setFilterRoom(null);
+            setFilterInstructor(null);
+
+            setFilterEvents(null);
+          }}
+          id="room-filter-reset"
+        >
+          <IoMdClose size={25} color="white" />
+        </button>
+      </div>
+
+      <Calendar
+        className="calendar"
+        messages={{
+          date: "Tarih",
+          time: "Zaman",
+          event: "Ders",
+          allDay: "Tüm Gün",
+          week: "Hafta",
+          work_week: "İş Günü",
+          day: "Gün",
+          month: "Ay",
+          previous: "Geri",
+          next: "İleri",
+          yesterday: "Dün",
+          tomorrow: "Yarın",
+          today: "Bugün",
+          agenda: "Ajanda",
+          showMore: (count) => "+" + count + " etkinlik",
+          noEventsInRange: "Bu aralıkta dolu gün bulunamadı.",
+        }}
+        events={filterEvents !== null ? filterEvents : events}
+        selectable={true}
+        endAccessor="end"
+        startAccessor="start"
+        localizer={localizer}
+        onSelectSlot={() => {
+          setModalVisible(true);
+        }}
+        style={{ height: "76vh" }}
+        onSelectEvent={onSelectEvent}
+        eventPropGetter={(event) => {
+          const roomType = event.room[0];
+
+          let newStyle;
+
+          if (event.is_main) {
+            if (roomType === "D") {
+              newStyle = {
+                color: "black",
+                fontWeight: "bold",
+                backgroundColor: colors.class1,
+              };
+            } else if (roomType === "E") {
+              newStyle = {
+                color: "black",
+                fontWeight: "bold",
+                backgroundColor: colors.class2,
+              };
+            } else if (roomType === "A") {
+              newStyle = {
+                color: "black",
+                fontWeight: "bold",
+                backgroundColor: colors.class3,
+              };
+            } else {
+              newStyle = {
+                color: "black",
+                fontWeight: "bold",
+                backgroundColor: colors.class0,
+              };
+            }
+          } else if (roomType === "D") {
+            newStyle = {
+              color: "black",
+              fontWeight: "bold",
+              backgroundColor: colors.class1,
+            };
+          } else if (roomType === "E") {
+            newStyle = {
+              color: "black",
+              fontWeight: "bold",
+              backgroundColor: colors.class2,
+            };
+          } else if (roomType === "A") {
+            newStyle = {
+              color: "black",
+              fontWeight: "bold",
+              backgroundColor: colors.class3,
+            };
+          } else {
+            newStyle = {
+              color: "black",
+              fontWeight: "bold",
+              backgroundColor: colors.class0,
+            };
+          }
+
+          return {
+            className: "",
+            style: newStyle,
+          };
+        }}
+        components={{
+          day: ({ date, localizer }) => localizer.format(date, "dddd"),
+        }}
+      />
+
+      <ReactModal
+        style={{
+          overlay: {
+            zIndex: 99,
+            backgroundColor: "rgba(0, 0, 0, 0)",
+          },
+          content: {
+            top: "10vh",
+            left: "30vw",
+            width: "40vw",
+            height: "80vh",
+            backgroundColor: "white",
+          },
+        }}
+        ariaHideApp={false}
+        isOpen={deleteEventModalVisible}
+      >
+        <div id="room-delete-modal-header">
+          <h2>Toplantı Düzenle</h2>
+
+          <button onClick={() => setDeleteEventModalVisible(false)}>
+            <IoMdClose />
+          </button>
+        </div>
+
+        <div id="room-create-modal-content">
+          <Creatable
+            onChange={(data) => setUpdateRoom(data.label.split("|")[0].trim())}
+            placeholder={"Yer"}
+            options={roomsExtra}
+          />
+
+          <div className="seperator" />
+
+          <Creatable
+            onChange={(data) => setUpdateInstructor(data.label)}
+            placeholder={"Hoca"}
+            options={instructors}
+          />
+
+          <div className="seperator" />
+
+          <Creatable
+            onChange={(data) => setUpdateRecurrence(data.value)}
+            placeholder={"Tekrar sıklığı"}
+            options={[
+              { value: "o", label: "Tek sefer" },
+              { value: "d", label: "Her gün" },
+              { value: "w", label: "Her hafta" },
+              { value: "m", label: "Her ay" },
+            ]}
+          />
+
+          <div className="seperator" />
+
+          <input
+            id="room-create-modal-content-description-input"
+            onChange={(data) => setUpdateDescription(data.target.value)}
+            placeholder={"Açıklama"}
+          />
+
+          <div className="seperator" />
+
+          <div id="room-create-modal-content-row">
+            <DatePicker
+              id="class-create-modal-content-date-container"
+              selected={updateStartDate}
+              onChange={(date) => setUpdateStartDate(date)}
+              dateFormat={"dd/MM/yyyy"}
+            />
+
+            <DatePicker
+              id="class-create-modal-content-date-container"
+              selected={updateEndDate}
+              onChange={(date) => setUpdateEndDate(date)}
+              dateFormat={"dd/MM/yyyy"}
+            />
+          </div>
+
+          <div className="seperator" />
+
+          <div id="room-create-modal-content-row">
+            <div style={{ width: 250 }}>
+              <Creatable
+                onChange={(data) => {
+                  setUpdateStartTime(data.value);
+                }}
+                placeholder={"Başlangıç Saati"}
+                options={[
+                  { value: "8:00:00", label: "8:00" },
+                  { value: "8:15:00", label: "8:15" },
+                  { value: "8:30:00", label: "8:30" },
+                  { value: "8:45:00", label: "8:45" },
+                  { value: "9:00:00", label: "9:00" },
+                  { value: "9:15:00", label: "9:15" },
+                  { value: "9:30:00", label: "9:30" },
+                  { value: "9:45:00", label: "9:45" },
+                  { value: "10:00:00", label: "10:00" },
+                  { value: "10:15:00", label: "10:15" },
+                  { value: "10:30:00", label: "10:30" },
+                  { value: "10:45:00", label: "10:45" },
+                  { value: "11:00:00", label: "11:00" },
+                  { value: "11:15:00", label: "11:15" },
+                  { value: "11:30:00", label: "11:30" },
+                  { value: "11:45:00", label: "11:45" },
+                  { value: "12:00:00", label: "12:00" },
+                  { value: "12:15:00", label: "12:15" },
+                  { value: "12:00:00", label: "12:30" },
+                  { value: "12:45:00", label: "12:45" },
+                  { value: "13:00:00", label: "13:00" },
+                  { value: "13:15:00", label: "13:15" },
+                  { value: "13:30:00", label: "13:30" },
+                  { value: "13:45:00", label: "13:45" },
+                  { value: "14:00:00", label: "14:00" },
+                  { value: "14:15:00", label: "14:15" },
+                  { value: "14:30:00", label: "14:30" },
+                  { value: "14:45:00", label: "14:45" },
+                  { value: "15:00:00", label: "15:00" },
+                  { value: "15:15:00", label: "15:15" },
+                  { value: "15:30:00", label: "15:30" },
+                  { value: "15:45:00", label: "15:45" },
+                  { value: "16:00:00", label: "16:00" },
+                  { value: "16:15:00", label: "16:15" },
+                  { value: "16:30:00", label: "16:30" },
+                  { value: "16:45:00", label: "16:45" },
+                  { value: "17:00:00", label: "17:00" },
+                  { value: "17:15:00", label: "17:15" },
+                  { value: "17:30:00", label: "17:30" },
+                  { value: "17:45:00", label: "17:45" },
+                  { value: "18:00:00", label: "18:00" },
+                  { value: "18:15:00", label: "18:15" },
+                  { value: "18:30:00", label: "18:30" },
+                  { value: "18:45:00", label: "18:45" },
+                  { value: "19:00:00", label: "19:00" },
+                  { value: "19:15:00", label: "19:15" },
+                  { value: "19:30:00", label: "19:30" },
+                  { value: "19:45:00", label: "19:45" },
+                  { value: "20:00:00", label: "20:00" },
+                  { value: "20:15:00", label: "20:15" },
+                  { value: "20:30:00", label: "20:30" },
+                  { value: "20:45:00", label: "20:45" },
+                  { value: "21:00:00", label: "21:00" },
+                  { value: "21:15:00", label: "21:15" },
+                  { value: "21:30:00", label: "21:30" },
+                  { value: "21:45:00", label: "21:45" },
+                  { value: "22:00:00", label: "22:00" },
+                  { value: "22:15:00", label: "22:15" },
+                  { value: "22:30:00", label: "22:30" },
+                  { value: "22:45:00", label: "22:45" },
+                  { value: "23:00:00", label: "23:00" },
+                  { value: "23:15:00", label: "23:15" },
+                  { value: "23:30:00", label: "23:30" },
+                  { value: "23:45:00", label: "23:45" },
+                ]}
+              />
+            </div>
+
+            <div style={{ width: 250 }}>
+              <Creatable
+                onChange={(data) => {
+                  setUpdateEndTime(data.value);
+                }}
+                placeholder={"Bitiş Saati"}
+                options={[
+                  { value: "8:00:00", label: "8:00" },
+                  { value: "8:15:00", label: "8:15" },
+                  { value: "8:30:00", label: "8:30" },
+                  { value: "8:45:00", label: "8:45" },
+                  { value: "9:00:00", label: "9:00" },
+                  { value: "9:15:00", label: "9:15" },
+                  { value: "9:30:00", label: "9:30" },
+                  { value: "9:45:00", label: "9:45" },
+                  { value: "10:00:00", label: "10:00" },
+                  { value: "10:15:00", label: "10:15" },
+                  { value: "10:30:00", label: "10:30" },
+                  { value: "10:45:00", label: "10:45" },
+                  { value: "11:00:00", label: "11:00" },
+                  { value: "11:15:00", label: "11:15" },
+                  { value: "11:30:00", label: "11:30" },
+                  { value: "11:45:00", label: "11:45" },
+                  { value: "12:00:00", label: "12:00" },
+                  { value: "12:15:00", label: "12:15" },
+                  { value: "12:00:00", label: "12:30" },
+                  { value: "12:45:00", label: "12:45" },
+                  { value: "13:00:00", label: "13:00" },
+                  { value: "13:15:00", label: "13:15" },
+                  { value: "13:30:00", label: "13:30" },
+                  { value: "13:45:00", label: "13:45" },
+                  { value: "14:00:00", label: "14:00" },
+                  { value: "14:15:00", label: "14:15" },
+                  { value: "14:30:00", label: "14:30" },
+                  { value: "14:45:00", label: "14:45" },
+                  { value: "15:00:00", label: "15:00" },
+                  { value: "15:15:00", label: "15:15" },
+                  { value: "15:30:00", label: "15:30" },
+                  { value: "15:45:00", label: "15:45" },
+                  { value: "16:00:00", label: "16:00" },
+                  { value: "16:15:00", label: "16:15" },
+                  { value: "16:30:00", label: "16:30" },
+                  { value: "16:45:00", label: "16:45" },
+                  { value: "17:00:00", label: "17:00" },
+                  { value: "17:15:00", label: "17:15" },
+                  { value: "17:30:00", label: "17:30" },
+                  { value: "17:45:00", label: "17:45" },
+                  { value: "18:00:00", label: "18:00" },
+                  { value: "18:15:00", label: "18:15" },
+                  { value: "18:30:00", label: "18:30" },
+                  { value: "18:45:00", label: "18:45" },
+                  { value: "19:00:00", label: "19:00" },
+                  { value: "19:15:00", label: "19:15" },
+                  { value: "19:30:00", label: "19:30" },
+                  { value: "19:45:00", label: "19:45" },
+                  { value: "20:00:00", label: "20:00" },
+                  { value: "20:15:00", label: "20:15" },
+                  { value: "20:30:00", label: "20:30" },
+                  { value: "20:45:00", label: "20:45" },
+                  { value: "21:00:00", label: "21:00" },
+                  { value: "21:15:00", label: "21:15" },
+                  { value: "21:30:00", label: "21:30" },
+                  { value: "21:45:00", label: "21:45" },
+                  { value: "22:00:00", label: "22:00" },
+                  { value: "22:15:00", label: "22:15" },
+                  { value: "22:30:00", label: "22:30" },
+                  { value: "22:45:00", label: "22:45" },
+                  { value: "23:00:00", label: "23:00" },
+                  { value: "23:15:00", label: "23:15" },
+                  { value: "23:30:00", label: "23:30" },
+                  { value: "23:45:00", label: "23:45" },
+                ]}
+              />
+            </div>
+          </div>
+
+          <div className="seperator" />
+
+          <label id="room-create-modal-exam-label">
+            <input
+              id="room-create-modal-exam-checkbox"
+              type="checkbox"
+              checked={updateIsMain}
+              onChange={() => {
+                setUpdateIsMain(!updateIsMain);
+              }}
+            />
+            &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
+            işaretleyin.
+          </label>
+
+          <button
+            onClick={async () => {
+              if (
+                updateInstructor !== null &&
+                updateStartDate !== null &&
+                updateEndDate !== null &&
+                updateStartTime !== null &&
+                updateEndTime !== null &&
+                updateRecurrence !== null &&
+                updateRoom !== null
+              ) {
+                if (recurrence === "o") {
+                  if (
+                    startDate.getDate() !== undefined &&
+                    endDate.getDate() !== undefined &&
+                    startDate.getDate() === endDate.getDate()
+                  ) {
+                    await API.updateMeetingEvent(
+                      eventDeleteID,
+                      updateDescription,
+                      updateInstructor,
+                      updateStartDate,
+                      updateEndDate,
+                      updateStartTime,
+                      updateEndTime,
+                      updateRecurrence,
+                      updateRoom,
+                      updateIsMain
+                    );
+
+                    handleMeetingEvents();
+
+                    setDeleteEventModalVisible(false);
+                  } else {
+                    toast.error(
+                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                      {
+                        theme: "light",
+                        autoClose: 3000,
+                        draggable: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        progress: undefined,
+                        hideProgressBar: false,
+                        position: "bottom-center",
+                      }
+                    );
+                  }
+                } else {
+                  await API.updateMeetingEvent(
+                    eventDeleteID,
+                    updateDescription,
+                    updateInstructor,
+                    updateStartDate,
+                    updateEndDate,
+                    updateStartTime,
+                    updateEndTime,
+                    updateRecurrence,
+                    updateRoom,
+                    updateIsMain
+                  );
+
+                  handleMeetingEvents();
+
+                  setDeleteEventModalVisible(false);
+                }
+              }
+            }}
+            id="room-create-modal-content-button"
+          >
+            <FaRegSave size={25} />
+          </button>
+
+          <button
+            id="room-delete-modal-content-buttons-container-action-button-2"
+            onClick={async () => {
+              await API.deleteMeetingEvent(eventDeleteID, eventDeleteDate);
+
+              handleMeetingEvents();
+
+              setDeleteEventModalVisible(false);
+            }}
+          >
+            Sadece Bunu Sil
+          </button>
+
+          <button
+            id="room-delete-modal-content-buttons-container-action-button"
+            onClick={async () => {
+              await API.deleteMeetingEvents(eventDeleteID);
+
+              handleMeetingEvents();
+
+              setDeleteEventModalVisible(false);
+            }}
+          >
+            Hepsini Sil
+          </button>
+        </div>
+      </ReactModal>
+
+      <ReactModal
+        style={{
+          overlay: {
+            zIndex: 99,
+            backgroundColor: "rgba(0, 0, 0, 0)",
+          },
+          content: {
+            top: "10vh",
+            left: "30vw",
+            width: "40vw",
+            height: "80vh",
+            backgroundColor: "white",
+          },
+        }}
+        ariaHideApp={false}
+        isOpen={modalVisible}
+      >
+        <div id="room-create-modal-header">
+          <h2>Toplantı Ekle</h2>
+
+          <button onClick={() => setModalVisible(false)}>
+            <IoMdClose />
+          </button>
+        </div>
+
+        <div id="room-create-modal-content">
+          <Creatable
+            onChange={(data) => setRoom(data.label.split("|")[0].trim())}
+            placeholder={"Yer"}
+            options={roomsExtra}
+          />
+
+          <div className="seperator" />
+
+          <Creatable
+            onChange={(data) => setInstructor(data.label)}
+            placeholder={"Hoca"}
+            options={instructors}
+          />
+
+          <div className="seperator" />
+
+          <Creatable
+            onChange={(data) => setRecurrence(data.value)}
+            placeholder={"Tekrar sıklığı"}
+            options={[
+              { value: "o", label: "Tek sefer" },
+              { value: "d", label: "Her gün" },
+              { value: "w", label: "Her hafta" },
+              { value: "m", label: "Her ay" },
+            ]}
+          />
+
+          <div className="seperator" />
+
+          <input
+            id="room-create-modal-content-description-input"
+            onChange={(data) => setDescription(data.target.value)}
+            placeholder={"Açıklama"}
+          />
+
+          <div className="seperator" />
+
+          <div id="room-create-modal-content-row">
+            <DatePicker
+              id="class-create-modal-content-date-container"
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              dateFormat={"dd/MM/yyyy"}
+            />
+
+            <DatePicker
+              id="class-create-modal-content-date-container"
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              dateFormat={"dd/MM/yyyy"}
+            />
+          </div>
+
+          <div className="seperator" />
+
+          <div id="room-create-modal-content-row">
+            <div style={{ width: 250 }}>
+              <Creatable
+                onChange={(data) => {
+                  setStartTime(data.value);
+                }}
+                placeholder={"Başlangıç Saati"}
+                options={[
+                  { value: "8:00:00", label: "8:00" },
+                  { value: "8:15:00", label: "8:15" },
+                  { value: "8:30:00", label: "8:30" },
+                  { value: "8:45:00", label: "8:45" },
+                  { value: "9:00:00", label: "9:00" },
+                  { value: "9:15:00", label: "9:15" },
+                  { value: "9:30:00", label: "9:30" },
+                  { value: "9:45:00", label: "9:45" },
+                  { value: "10:00:00", label: "10:00" },
+                  { value: "10:15:00", label: "10:15" },
+                  { value: "10:30:00", label: "10:30" },
+                  { value: "10:45:00", label: "10:45" },
+                  { value: "11:00:00", label: "11:00" },
+                  { value: "11:15:00", label: "11:15" },
+                  { value: "11:30:00", label: "11:30" },
+                  { value: "11:45:00", label: "11:45" },
+                  { value: "12:00:00", label: "12:00" },
+                  { value: "12:15:00", label: "12:15" },
+                  { value: "12:00:00", label: "12:30" },
+                  { value: "12:45:00", label: "12:45" },
+                  { value: "13:00:00", label: "13:00" },
+                  { value: "13:15:00", label: "13:15" },
+                  { value: "13:30:00", label: "13:30" },
+                  { value: "13:45:00", label: "13:45" },
+                  { value: "14:00:00", label: "14:00" },
+                  { value: "14:15:00", label: "14:15" },
+                  { value: "14:30:00", label: "14:30" },
+                  { value: "14:45:00", label: "14:45" },
+                  { value: "15:00:00", label: "15:00" },
+                  { value: "15:15:00", label: "15:15" },
+                  { value: "15:30:00", label: "15:30" },
+                  { value: "15:45:00", label: "15:45" },
+                  { value: "16:00:00", label: "16:00" },
+                  { value: "16:15:00", label: "16:15" },
+                  { value: "16:30:00", label: "16:30" },
+                  { value: "16:45:00", label: "16:45" },
+                  { value: "17:00:00", label: "17:00" },
+                  { value: "17:15:00", label: "17:15" },
+                  { value: "17:30:00", label: "17:30" },
+                  { value: "17:45:00", label: "17:45" },
+                  { value: "18:00:00", label: "18:00" },
+                  { value: "18:15:00", label: "18:15" },
+                  { value: "18:30:00", label: "18:30" },
+                  { value: "18:45:00", label: "18:45" },
+                  { value: "19:00:00", label: "19:00" },
+                  { value: "19:15:00", label: "19:15" },
+                  { value: "19:30:00", label: "19:30" },
+                  { value: "19:45:00", label: "19:45" },
+                  { value: "20:00:00", label: "20:00" },
+                  { value: "20:15:00", label: "20:15" },
+                  { value: "20:30:00", label: "20:30" },
+                  { value: "20:45:00", label: "20:45" },
+                  { value: "21:00:00", label: "21:00" },
+                  { value: "21:15:00", label: "21:15" },
+                  { value: "21:30:00", label: "21:30" },
+                  { value: "21:45:00", label: "21:45" },
+                  { value: "22:00:00", label: "22:00" },
+                  { value: "22:15:00", label: "22:15" },
+                  { value: "22:30:00", label: "22:30" },
+                  { value: "22:45:00", label: "22:45" },
+                  { value: "23:00:00", label: "23:00" },
+                  { value: "23:15:00", label: "23:15" },
+                  { value: "23:30:00", label: "23:30" },
+                  { value: "23:45:00", label: "23:45" },
+                ]}
+              />
+            </div>
+
+            <div style={{ width: 250 }}>
+              <Creatable
+                onChange={(data) => {
+                  setEndTime(data.value);
+                }}
+                placeholder={"Bitiş Saati"}
+                options={[
+                  { value: "8:00:00", label: "8:00" },
+                  { value: "8:15:00", label: "8:15" },
+                  { value: "8:30:00", label: "8:30" },
+                  { value: "8:45:00", label: "8:45" },
+                  { value: "9:00:00", label: "9:00" },
+                  { value: "9:15:00", label: "9:15" },
+                  { value: "9:30:00", label: "9:30" },
+                  { value: "9:45:00", label: "9:45" },
+                  { value: "10:00:00", label: "10:00" },
+                  { value: "10:15:00", label: "10:15" },
+                  { value: "10:30:00", label: "10:30" },
+                  { value: "10:45:00", label: "10:45" },
+                  { value: "11:00:00", label: "11:00" },
+                  { value: "11:15:00", label: "11:15" },
+                  { value: "11:30:00", label: "11:30" },
+                  { value: "11:45:00", label: "11:45" },
+                  { value: "12:00:00", label: "12:00" },
+                  { value: "12:15:00", label: "12:15" },
+                  { value: "12:00:00", label: "12:30" },
+                  { value: "12:45:00", label: "12:45" },
+                  { value: "13:00:00", label: "13:00" },
+                  { value: "13:15:00", label: "13:15" },
+                  { value: "13:30:00", label: "13:30" },
+                  { value: "13:45:00", label: "13:45" },
+                  { value: "14:00:00", label: "14:00" },
+                  { value: "14:15:00", label: "14:15" },
+                  { value: "14:30:00", label: "14:30" },
+                  { value: "14:45:00", label: "14:45" },
+                  { value: "15:00:00", label: "15:00" },
+                  { value: "15:15:00", label: "15:15" },
+                  { value: "15:30:00", label: "15:30" },
+                  { value: "15:45:00", label: "15:45" },
+                  { value: "16:00:00", label: "16:00" },
+                  { value: "16:15:00", label: "16:15" },
+                  { value: "16:30:00", label: "16:30" },
+                  { value: "16:45:00", label: "16:45" },
+                  { value: "17:00:00", label: "17:00" },
+                  { value: "17:15:00", label: "17:15" },
+                  { value: "17:30:00", label: "17:30" },
+                  { value: "17:45:00", label: "17:45" },
+                  { value: "18:00:00", label: "18:00" },
+                  { value: "18:15:00", label: "18:15" },
+                  { value: "18:30:00", label: "18:30" },
+                  { value: "18:45:00", label: "18:45" },
+                  { value: "19:00:00", label: "19:00" },
+                  { value: "19:15:00", label: "19:15" },
+                  { value: "19:30:00", label: "19:30" },
+                  { value: "19:45:00", label: "19:45" },
+                  { value: "20:00:00", label: "20:00" },
+                  { value: "20:15:00", label: "20:15" },
+                  { value: "20:30:00", label: "20:30" },
+                  { value: "20:45:00", label: "20:45" },
+                  { value: "21:00:00", label: "21:00" },
+                  { value: "21:15:00", label: "21:15" },
+                  { value: "21:30:00", label: "21:30" },
+                  { value: "21:45:00", label: "21:45" },
+                  { value: "22:00:00", label: "22:00" },
+                  { value: "22:15:00", label: "22:15" },
+                  { value: "22:30:00", label: "22:30" },
+                  { value: "22:45:00", label: "22:45" },
+                  { value: "23:00:00", label: "23:00" },
+                  { value: "23:15:00", label: "23:15" },
+                  { value: "23:30:00", label: "23:30" },
+                  { value: "23:45:00", label: "23:45" },
+                ]}
+              />
+            </div>
+          </div>
+
+          <div className="seperator" />
+
+          <label id="room-create-modal-exam-label">
+            <input
+              id="room-create-modal-exam-checkbox"
+              type="checkbox"
+              checked={isMain}
+              onChange={() => {
+                setIsMain(!isMain);
+              }}
+            />
+            &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
+            işaretleyin.
+          </label>
+
+          <button
+            onClick={async () => {
+              if (
+                instructor !== null &&
+                startDate !== null &&
+                endDate !== null &&
+                startTime !== null &&
+                endTime !== null &&
+                recurrence !== null &&
+                room !== null
+              ) {
+                if (recurrence === "o") {
+                  if (
+                    startDate.getDate() !== undefined &&
+                    endDate.getDate() !== undefined &&
+                    startDate.getDate() === endDate.getDate()
+                  ) {
+                    await API.createMeetingEvent(
+                      description,
+                      instructor,
+                      startDate,
+                      endDate,
+                      startTime,
+                      endTime,
+                      recurrence,
+                      room,
+                      isMain
+                    );
+
+                    handleMeetingEvents();
+
+                    setModalVisible(false);
+                  } else {
+                    toast.error(
+                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                      {
+                        theme: "light",
+                        autoClose: 3000,
+                        draggable: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        progress: undefined,
+                        hideProgressBar: false,
+                        position: "bottom-center",
+                      }
+                    );
+                  }
+                } else {
+                  await API.createMeetingEvent(
+                    description,
+                    instructor,
+                    startDate,
+                    endDate,
+                    startTime,
+                    endTime,
+                    recurrence,
+                    room,
+                    isMain
+                  );
+
+                  handleMeetingEvents();
+
+                  setModalVisible(false);
+                }
+              }
+            }}
+            id="room-create-modal-content-button"
+          >
+            <FaRegSave size={25} />
+          </button>
+        </div>
+      </ReactModal>
+    </div>
+  );
+}

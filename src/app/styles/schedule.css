@@ -1,0 +1,61 @@
+.schedule-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#schedule-date-container {
+  gap: 12px;
+  height: 40px;
+  display: flex;
+  margin-left: 1vw;
+  margin-top: 16px;
+  align-items: center;
+}
+
+#schedule-date-container button {
+  width: 70px;
+  border: none;
+  height: 30px;
+  display: flex;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-table {
+  margin-top: 2vh;
+  margin-left: 1vw;
+  border-collapse: collapse;
+  border-right: 1px solid #b8b8b8;
+  border-bottom: 1px solid #b8b8b8;
+}
+
+.schedule-table tbody {
+  height: 70vh;
+  display: block;
+  overflow-y: scroll;
+}
+
+.schedule-table thead {
+  display: block;
+}
+
+.schedule-table th,
+td {
+  width: 5.5vw;
+  align-items: center;
+  border-collapse: collapse;
+  border: 1px solid #b8b8b8;
+}
+
+.schedule-table th {
+  height: 6vh;
+}
+
+.schedule-table td {
+  height: 6vh;
+  text-align: center;
+}
