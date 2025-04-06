@@ -14,9 +14,6 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 // components
 import Header from "@root/components/Header";
 
-// styles
-import "../styles/room.css";
-
 // utils
 import "moment/locale/tr.js";
 import { API } from "@root/utils/API";
@@ -25,9 +22,9 @@ import { colors } from "@root/utils/colors";
 // library styles
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
-const rooms = [];
-const roomsExtra = [];
-const instructors = [];
+const rooms: any = [];
+const roomsExtra: any = [];
+const instructors: any = [];
 
 const localizer = momentLocalizer(moment);
 
@@ -53,7 +50,7 @@ export default function Room() {
   const [filterEvents, setFilterEvents] = React.useState(null);
 
   const [eventDeleteID, setEventDeleteID] = React.useState(null);
-  const [eventDeleteDate, setEventDeleteDate] = React.useState(null);
+  const [eventDeleteDate, setEventDeleteDate] = React.useState<any>(null);
   const [deleteEventModalVisible, setDeleteEventModalVisible] =
     React.useState(false);
 
@@ -134,7 +131,7 @@ export default function Room() {
         }
 
         if (_event.recurrence === "d" || _event.recurrence === "o") {
-          for (let i = 0; i <= parseInt(daysInBetween); i += 1) {
+          for (let i = 0; i <= parseInt(daysInBetween.toString()); i += 1) {
             if (
               !exclude_dates.includes(
                 moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
@@ -231,7 +228,7 @@ export default function Room() {
       }
     }
 
-    setEvents(_events);
+    setEvents(_events as any);
   };
 
   React.useEffect(() => {
@@ -240,27 +237,27 @@ export default function Room() {
   }, []);
 
   const handleFilterEvents = () => {
-    const _filterEvents = [];
+    const _filterEvents: any = [];
 
     if (filterRoom !== null || filterInstructor !== null) {
       if (filterRoom !== null && filterInstructor !== null) {
         for (let _event of events) {
           if (
-            _event.room === filterRoom &&
-            _event.instructor === filterInstructor
+            (_event as any).room === filterRoom &&
+            (_event as any).instructor === filterInstructor
           ) {
             _filterEvents.push(_event);
           }
         }
       } else if (filterRoom === null && filterInstructor !== null) {
         for (let _event of events) {
-          if (_event.instructor === filterInstructor) {
+          if ((_event as any).instructor === filterInstructor) {
             _filterEvents.push(_event);
           }
         }
       } else if (filterRoom !== null && filterInstructor === null) {
         for (let _event of events) {
-          if (_event.room === filterRoom) {
+          if ((_event as any).room === filterRoom) {
             _filterEvents.push(_event);
           }
         }
@@ -276,7 +273,7 @@ export default function Room() {
     handleFilterEvents();
   }, [filterRoom, filterInstructor]);
 
-  const onSelectEvent = (event) => {
+  const onSelectEvent = (event: any) => {
     setEventDeleteID(event.id);
     setEventDeleteDate(moment(event.start).format("YYYY-MM-DD"));
 
@@ -284,17 +281,17 @@ export default function Room() {
   };
 
   return (
-    <div id="room-container">
+    <div className="flex-1">
       <Header />
 
-      <div id="room-filter-row">
-        <div id="room-filter-select">
+      <div className="flex flex-row mt-[2vh] ml-[2.5vw]">
+        <div className="w-[10vw]">
           <Creatable
             onChange={(data) => {
-              if (data.label === "Hepsi") {
+              if (data!.label === "Hepsi") {
                 setFilterRoom(null);
               } else {
-                setFilterRoom(data.label);
+                setFilterRoom(data!.label as any);
               }
             }}
             value={{ label: filterRoom === null ? "Yer" : filterRoom }}
@@ -309,13 +306,13 @@ export default function Room() {
           />
         </div>
 
-        <div id="room-filter-select" style={{ marginLeft: "2vw" }}>
+        <div className="flex flex-row ml-[2vw]">
           <Creatable
             onChange={(data) => {
-              if (data.label === "Hepsi") {
+              if (data!.label === "Hepsi") {
                 setFilterInstructor(null);
               } else {
-                setFilterInstructor(data.label);
+                setFilterInstructor(data!.label as any);
               }
             }}
             value={{
@@ -339,14 +336,14 @@ export default function Room() {
 
             setFilterEvents(null);
           }}
-          id="room-filter-reset"
+          className="w-[40px] h-[40px] flex ml-[2vw] items-center justify-center rounded-[20px] bg-[#c00000]"
         >
           <IoMdClose size={25} color="white" />
         </button>
       </div>
 
       <Calendar
-        className="calendar"
+        className="w-[95vw] h-[76vh] mt-[2vh] ml-[2.5vw]"
         messages={{
           date: "Tarih",
           time: "Zaman",
@@ -367,7 +364,6 @@ export default function Room() {
         }}
         events={filterEvents !== null ? filterEvents : events}
         selectable={true}
-        endAccessor="end"
         startAccessor="start"
         localizer={localizer}
         onSelectSlot={() => {
@@ -438,7 +434,8 @@ export default function Room() {
           };
         }}
         components={{
-          day: ({ date, localizer }) => localizer.format(date, "dddd"),
+          day: ({ date, localizer }: { date: any; localizer: any }) =>
+            localizer.format(date, "dddd"),
         }}
       />
 
@@ -459,33 +456,38 @@ export default function Room() {
         ariaHideApp={false}
         isOpen={deleteEventModalVisible}
       >
-        <div id="room-delete-modal-header">
+        <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
           <h2>Toplantı Düzenle</h2>
 
-          <button onClick={() => setDeleteEventModalVisible(false)}>
+          <button
+            className="text-2xl bg-white"
+            onClick={() => setDeleteEventModalVisible(false)}
+          >
             <IoMdClose />
           </button>
         </div>
 
-        <div id="room-create-modal-content">
+        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
           <Creatable
-            onChange={(data) => setUpdateRoom(data.label.split("|")[0].trim())}
+            onChange={(data: any) =>
+              setUpdateRoom(data.label.split("|")[0].trim())
+            }
             placeholder={"Yer"}
             options={roomsExtra}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setUpdateInstructor(data.label)}
+            onChange={(data: any) => setUpdateInstructor(data.label)}
             placeholder={"Hoca"}
             options={instructors}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setUpdateRecurrence(data.value)}
+            onChange={(data: any) => setUpdateRecurrence(data.value)}
             placeholder={"Tekrar sıklığı"}
             options={[
               { value: "o", label: "Tek sefer" },
@@ -495,38 +497,38 @@ export default function Room() {
             ]}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <input
-            id="room-create-modal-content-description-input"
+            className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
             onChange={(data) => setUpdateDescription(data.target.value)}
             placeholder={"Açıklama"}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <div id="room-create-modal-content-row">
+          <div className="flex flex-row justify-around">
             <DatePicker
               id="class-create-modal-content-date-container"
               selected={updateStartDate}
-              onChange={(date) => setUpdateStartDate(date)}
+              onChange={(date: any) => setUpdateStartDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
 
             <DatePicker
               id="class-create-modal-content-date-container"
               selected={updateEndDate}
-              onChange={(date) => setUpdateEndDate(date)}
+              onChange={(date: any) => setUpdateEndDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
           </div>
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <div id="room-create-modal-content-row">
+          <div className="flex flex-row justify-around">
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setUpdateStartTime(data.value);
                 }}
                 placeholder={"Başlangıç Saati"}
@@ -601,7 +603,7 @@ export default function Room() {
 
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setUpdateEndTime(data.value);
                 }}
                 placeholder={"Bitiş Saati"}
@@ -675,11 +677,11 @@ export default function Room() {
             </div>
           </div>
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <label id="room-create-modal-exam-label">
+          <label className="flex items-center">
             <input
-              id="room-create-modal-exam-checkbox"
+              className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
               type="checkbox"
               checked={updateIsMain}
               onChange={() => {
@@ -758,13 +760,13 @@ export default function Room() {
                 }
               }
             }}
-            id="room-create-modal-content-button"
+            className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
           >
             <FaRegSave size={25} />
           </button>
 
           <button
-            id="room-delete-modal-content-buttons-container-action-button-2"
+            className="w-[30%] bottom-[40px] right-[425px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
             onClick={async () => {
               await API.deleteMeetingEvent(eventDeleteID, eventDeleteDate);
 
@@ -777,7 +779,7 @@ export default function Room() {
           </button>
 
           <button
-            id="room-delete-modal-content-buttons-container-action-button"
+            className="w-[30%] bottom-[40px] right-[150px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
             onClick={async () => {
               await API.deleteMeetingEvents(eventDeleteID);
 
@@ -808,33 +810,36 @@ export default function Room() {
         ariaHideApp={false}
         isOpen={modalVisible}
       >
-        <div id="room-create-modal-header">
+        <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
           <h2>Toplantı Ekle</h2>
 
-          <button onClick={() => setModalVisible(false)}>
+          <button
+            className="text-2xl bg-white"
+            onClick={() => setModalVisible(false)}
+          >
             <IoMdClose />
           </button>
         </div>
 
-        <div id="room-create-modal-content">
+        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
           <Creatable
-            onChange={(data) => setRoom(data.label.split("|")[0].trim())}
+            onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
             placeholder={"Yer"}
             options={roomsExtra}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setInstructor(data.label)}
+            onChange={(data: any) => setInstructor(data.label)}
             placeholder={"Hoca"}
             options={instructors}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setRecurrence(data.value)}
+            onChange={(data: any) => setRecurrence(data.value)}
             placeholder={"Tekrar sıklığı"}
             options={[
               { value: "o", label: "Tek sefer" },
@@ -844,38 +849,38 @@ export default function Room() {
             ]}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
           <input
-            id="room-create-modal-content-description-input"
+            className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
             onChange={(data) => setDescription(data.target.value)}
             placeholder={"Açıklama"}
           />
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <div id="room-create-modal-content-row">
+          <div className="flex flex-row justify-around">
             <DatePicker
               id="class-create-modal-content-date-container"
               selected={startDate}
-              onChange={(date) => setStartDate(date)}
+              onChange={(date: any) => setStartDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
 
             <DatePicker
               id="class-create-modal-content-date-container"
               selected={endDate}
-              onChange={(date) => setEndDate(date)}
+              onChange={(date: any) => setEndDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
           </div>
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <div id="room-create-modal-content-row">
+          <div className="flex flex-row justify-around">
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setStartTime(data.value);
                 }}
                 placeholder={"Başlangıç Saati"}
@@ -950,7 +955,7 @@ export default function Room() {
 
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setEndTime(data.value);
                 }}
                 placeholder={"Bitiş Saati"}
@@ -1024,11 +1029,11 @@ export default function Room() {
             </div>
           </div>
 
-          <div className="seperator" />
+          <div className="h-[5%]" />
 
-          <label id="room-create-modal-exam-label">
+          <label className="flex items-center">
             <input
-              id="room-create-modal-exam-checkbox"
+              className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
               type="checkbox"
               checked={isMain}
               onChange={() => {
@@ -1105,7 +1110,7 @@ export default function Room() {
                 }
               }
             }}
-            id="room-create-modal-content-button"
+            className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
           >
             <FaRegSave size={25} />
           </button>

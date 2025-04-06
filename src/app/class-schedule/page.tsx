@@ -8,9 +8,6 @@ import { OrbitProgress } from "react-loading-indicators";
 // components
 import Header from "@root/components/Header";
 
-// styles
-import "../styles/schedule.css";
-
 // utils
 import { API } from "@root/utils/API";
 import { colors } from "@root/utils/colors";
@@ -33,7 +30,7 @@ const hours = [
   "22.40",
   "23.40",
 ];
-const rooms = [];
+const rooms: { value: string; label: any }[] = [];
 
 export default function Schedule() {
   const router = useRouter();
@@ -50,7 +47,7 @@ export default function Schedule() {
     handleAuth();
   }, []);
 
-  const [events, setEvents] = React.useState([]);
+  const [events, setEvents] = React.useState<any>([]);
   const [date, setDate] = React.useState(moment(new Date()));
 
   const [loaded, setLoaded] = React.useState(false);
@@ -92,7 +89,7 @@ export default function Schedule() {
         }
 
         if (_event.recurrence === "d") {
-          for (let i = 0; i <= parseInt(daysInBetween); i += 1) {
+          for (let i = 0; i <= parseInt(daysInBetween.toString()); i += 1) {
             if (
               !exclude_dates.includes(
                 moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
@@ -137,12 +134,12 @@ export default function Schedule() {
               !exclude_dates.includes(
                 moment(_event.start_date)
                   .add(i * 30, "days")
-                  .format("YYYY-MM-DD") &&
-                  moment(date).format("YYYY-MM-DD") ===
-                    moment(_event.start_date)
-                      .add(i * 30, "days")
-                      .format("YYYY-MM-DD")
-              )
+                  .format("YYYY-MM-DD")
+              ) &&
+              moment(date).format("YYYY-MM-DD") ===
+                moment(_event.start_date)
+                  .add(i * 30, "days")
+                  .format("YYYY-MM-DD")
             ) {
               _events.push({
                 start: parseInt(_event.start_time.slice(0, 2)),
@@ -170,11 +167,12 @@ export default function Schedule() {
 
   if (loaded) {
     return (
-      <div id="schedule-container">
+      <div className="w-full h-full flex items-center justify-center">
         <Header />
 
-        <div id="schedule-date-container">
+        <div className="gap-[12px] h-[40px] flex ml-[1vw] mt-[16px] items-center">
           <button
+            className="w-[70px] border-none h-[30px] flex rounded-[8px] items-center justify-center"
             onClick={() => {
               setDate(moment(date.subtract(1, "day")));
             }}
@@ -185,6 +183,7 @@ export default function Schedule() {
           <h3>Tarih: {date.format("DD/MM/yyyy").toString()}</h3>
 
           <button
+            className="w-[70px] border-none h-[30px] flex rounded-[8px] items-center justify-center"
             onClick={() => {
               setDate(moment(date.add(1, "day")));
             }}
@@ -193,22 +192,31 @@ export default function Schedule() {
           </button>
         </div>
 
-        <table className="schedule-table">
-          <thead>
+        <table className="mt-[2vh] ml-[1vw] border-collapse border-r-[1px] border-l-[1px] border-[#b8b8b8]">
+          <thead className="block">
             <tr>
-              <th>Saat / Yer</th>
+              <th className="h-[6vh] w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]">
+                Saat / Yer
+              </th>
 
               {hours.map((hour, index) => (
-                <th key={index}>{hour}</th>
+                <th
+                  className="h-[6vh] w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
+                  key={index}
+                >
+                  {hour}
+                </th>
               ))}
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="h-[70vh] block overflow-y-auto">
             {rooms.map((room, index) => {
               return (
                 <tr key={index}>
-                  <td>{room.label}</td>
+                  <td className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]">
+                    {room.label}
+                  </td>
 
                   {hours.map((_, index) => {
                     {
@@ -221,14 +229,22 @@ export default function Schedule() {
                           event.end >= index + 8
                         ) {
                           return (
-                            <td key={index}>
+                            <td
+                              className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
+                              key={index}
+                            >
                               {event.class} - {event.instructor}
                             </td>
                           );
                         }
                       }
 
-                      return <td key={index}></td>;
+                      return (
+                        <td
+                          className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
+                          key={index}
+                        ></td>
+                      );
                     }
                   })}
                 </tr>
@@ -240,17 +256,10 @@ export default function Schedule() {
     );
   } else {
     return (
-      <div style={{ width: "100vw", height: "100vh" }}>
+      <div className="w-full h-full">
         <Header />
 
-        <div
-          style={{
-            height: "88%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div className="h-[88%] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>

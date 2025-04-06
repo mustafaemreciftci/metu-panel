@@ -1,15 +1,11 @@
 "use client";
 
 import React from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 // utils
 import { API } from "@root/utils/API";
-
-// css
-import "../styles/login.css";
 
 export default function Login() {
   const router = useRouter();
@@ -18,14 +14,16 @@ export default function Login() {
   const [password, setPassword] = React.useState("");
 
   return (
-    <div className="login-container">
+    <div className="gap-[12px] h-full flex items-center flex-col justify-center">
       <input
+        className="w-[14%] h-[30px] border-none text-center border-b-[1px] border-b-solid border-b-black"
         value={email}
         onChange={(value) => setEmail(value.target.value)}
         placeholder="Mail adresi"
       />
 
       <input
+        className="w-[14%] h-[30px] border-none text-center border-b-[1px] border-b-solid border-b-black"
         type="password"
         value={password}
         onChange={(value) => setPassword(value.target.value)}
@@ -33,6 +31,7 @@ export default function Login() {
       />
 
       <button
+        className="w-[10%] border-none h-[40px] flex mt-[40px] rounded-[8px] items-center justify-center bg-[#c00000]"
         onClick={async () => {
           const authStatus = await API.login(email, password);
 

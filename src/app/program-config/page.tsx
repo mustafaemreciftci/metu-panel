@@ -11,9 +11,6 @@ import { OrbitProgress } from "react-loading-indicators";
 // components
 import Header from "@root/components/Header";
 
-// styles
-import "../styles/config.css";
-
 // utils
 import { API } from "@root/utils/API";
 import { colors } from "@root/utils/colors";
@@ -53,12 +50,12 @@ export default function Config() {
   const [meetingRoomName, setMeetingRoomName] = React.useState("");
   const [meetingRoomCapacity, setMeetingRoomCapacity] = React.useState("");
 
-  const [courses, setCourses] = React.useState([]);
-  const [classRooms, setClassRooms] = React.useState([]);
-  const [instructors, setInstructors] = React.useState([]);
-  const [meetingRooms, setMeetingRooms] = React.useState([]);
+  const [courses, setCourses] = React.useState<any>([]);
+  const [classRooms, setClassRooms] = React.useState<any>([]);
+  const [instructors, setInstructors] = React.useState<any>([]);
+  const [meetingRooms, setMeetingRooms] = React.useState<any>([]);
 
-  const handleData = async (action = null) => {
+  const handleData = async (action: any = null) => {
     if (action === null) {
       const _classResponse = await API.getClasses();
       const _classRoomsResponse = await API.getClassRooms();
@@ -72,10 +69,10 @@ export default function Config() {
       const _instructorsArray = [];
       const _meetingRoomsArray = [];
 
-      const _coursesObject = [];
-      const _classRoomsObject = [];
-      const _instructorsObject = [];
-      const _meetingRoomsObject = [];
+      const _coursesObject: any = [];
+      const _classRoomsObject: any = [];
+      const _instructorsObject: any = [];
+      const _meetingRoomsObject: any = [];
 
       for (
         let _instructorIndex = 0;
@@ -320,20 +317,20 @@ export default function Config() {
 
   if (loaded) {
     return (
-      <div id="config-container">
+      <div className="w-full h-full flex items-center justify-center">
         <Header />
 
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          <div className="config-data-section-container">
+        <div className="flex flex-row">
+          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
             <div
               style={{
                 width: "100%",
               }}
             >
-              {instructors.map((instructor, index) => {
+              {instructors.map((instructor: any, index: number) => {
                 return (
                   <div
-                    className="config-data-section-table-row"
+                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
                     style={{
                       backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
                     }}
@@ -355,7 +352,7 @@ export default function Config() {
             </div>
 
             <button
-              className="config-add-data-button"
+              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
               onClick={() => {
                 setModalType("instructor");
                 setModalVisible(true);
@@ -365,16 +362,16 @@ export default function Config() {
             </button>
           </div>
 
-          <div className="config-data-section-container">
+          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
             <div
               style={{
                 width: "100%",
               }}
             >
-              {courses.map((course, index) => {
+              {courses.map((course: any, index: number) => {
                 return (
                   <div
-                    className="config-data-section-table-row"
+                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
                     style={{
                       backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
                     }}
@@ -396,7 +393,7 @@ export default function Config() {
             </div>
 
             <button
-              className="config-add-data-button"
+              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
               onClick={() => {
                 setModalType("class");
                 setModalVisible(true);
@@ -406,16 +403,16 @@ export default function Config() {
             </button>
           </div>
 
-          <div className="config-data-section-container">
+          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
             <div
               style={{
                 width: "100%",
               }}
             >
-              {classRooms.map((classRoom, index) => {
+              {classRooms.map((classRoom: any, index: number) => {
                 return (
                   <div
-                    className="config-data-section-table-row"
+                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
                     style={{
                       backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
                     }}
@@ -437,7 +434,7 @@ export default function Config() {
             </div>
 
             <button
-              className="config-add-data-button"
+              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
               onClick={() => {
                 setModalType("classRoom");
                 setModalVisible(true);
@@ -447,16 +444,16 @@ export default function Config() {
             </button>
           </div>
 
-          <div className="config-data-section-container">
+          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
             <div
               style={{
                 width: "100%",
               }}
             >
-              {meetingRooms.map((meetingRoom, index) => {
+              {meetingRooms.map((meetingRoom: any, index: number) => {
                 return (
                   <div
-                    className="config-data-section-table-row"
+                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
                     style={{
                       backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
                     }}
@@ -478,7 +475,7 @@ export default function Config() {
             </div>
 
             <button
-              className="config-add-data-button"
+              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
               onClick={() => {
                 setModalType("meetingRoom");
                 setModalVisible(true);
@@ -507,11 +504,14 @@ export default function Config() {
           isOpen={modalVisible}
         >
           {modalType === "instructor" ? (
-            <div id="config-modal-container">
-              <div id="config-modal-header">
+            <div className="pl-[5%]">
+              <div className="flex pr-[5%] flex-row justify-between">
                 <h2>Hoca Ekle</h2>
 
-                <button onClick={() => setModalVisible(false)}>
+                <button
+                  className="border-none text-2xl bg-white"
+                  onClick={() => setModalVisible(false)}
+                >
                   <IoMdClose />
                 </button>
               </div>
@@ -519,7 +519,7 @@ export default function Config() {
               <div style={{ height: 30 }} />
 
               <input
-                className="config-modal-input"
+                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                 onChange={(value) => setInstructorName(value.target.value)}
                 placeholder="Hocanın tam adı"
               />
@@ -532,17 +532,20 @@ export default function Config() {
 
                   setModalVisible(false);
                 }}
-                className="config-modal-save-button"
+                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
               >
                 <FaRegSave size={25} />
               </button>
             </div>
           ) : modalType === "classRoom" ? (
-            <div id="config-modal-container">
-              <div id="config-modal-header">
+            <div className="pl-[5%]">
+              <div className="flex pr-[5%] flex-row justify-between">
                 <h2>Sınıf Ekle</h2>
 
-                <button onClick={() => setModalVisible(false)}>
+                <button
+                  className="border-none text-2xl bg-white"
+                  onClick={() => setModalVisible(false)}
+                >
                   <IoMdClose />
                 </button>
               </div>
@@ -550,7 +553,7 @@ export default function Config() {
               <div style={{ height: 30 }} />
 
               <input
-                className="config-modal-input"
+                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                 onChange={(value) => setClassRoomName(value.target.value)}
                 placeholder="Sınıf adı"
               />
@@ -558,7 +561,7 @@ export default function Config() {
               <div style={{ height: 15 }} />
 
               <input
-                className="config-modal-input"
+                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                 onChange={(value) => setClassRoomCapacity(value.target.value)}
                 placeholder="Sınıf kapasitesi"
               />
@@ -566,7 +569,7 @@ export default function Config() {
               <div style={{ height: 15 }} />
 
               <input
-                className="config-modal-input"
+                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                 onChange={(value) =>
                   setClassRoomExamCapacity(value.target.value)
                 }
@@ -585,17 +588,20 @@ export default function Config() {
 
                   setModalVisible(false);
                 }}
-                className="config-modal-save-button"
+                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
               >
                 <FaRegSave size={25} />
               </button>
             </div>
           ) : modalType === "class" ? (
-            <div id="config-modal-container">
-              <div id="config-modal-header">
+            <div className="pl-[5%]">
+              <div className="flex pr-[5%] flex-row justify-between">
                 <h2>Ders Ekle</h2>
 
-                <button onClick={() => setModalVisible(false)}>
+                <button
+                  className="border-none text-2xl bg-white"
+                  onClick={() => setModalVisible(false)}
+                >
                   <IoMdClose />
                 </button>
               </div>
@@ -603,7 +609,7 @@ export default function Config() {
               <div style={{ height: 30 }} />
 
               <input
-                className="config-modal-input"
+                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                 onChange={(value) => setClassName(value.target.value)}
                 placeholder="Dersin adı"
               />
@@ -616,18 +622,21 @@ export default function Config() {
 
                   setModalVisible(false);
                 }}
-                className="config-modal-save-button"
+                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
               >
                 <FaRegSave size={25} />
               </button>
             </div>
           ) : (
             modalType === "meetingRoom" && (
-              <div id="config-modal-container">
-                <div id="config-modal-header">
+              <div className="pl-[5%]">
+                <div className="flex pr-[5%] flex-row justify-between">
                   <h2>Toplantı Odası Ekle</h2>
 
-                  <button onClick={() => setModalVisible(false)}>
+                  <button
+                    className="border-none text-2xl bg-white"
+                    onClick={() => setModalVisible(false)}
+                  >
                     <IoMdClose />
                   </button>
                 </div>
@@ -635,7 +644,7 @@ export default function Config() {
                 <div style={{ height: 30 }} />
 
                 <input
-                  className="config-modal-input"
+                  className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                   onChange={(value) => setMeetingRoomName(value.target.value)}
                   placeholder="Toplantı odası adı"
                 />
@@ -643,7 +652,7 @@ export default function Config() {
                 <div style={{ height: 15 }} />
 
                 <input
-                  className="config-modal-input"
+                  className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
                   onChange={(value) =>
                     setMeetingRoomCapacity(value.target.value)
                   }
@@ -661,7 +670,7 @@ export default function Config() {
 
                     setModalVisible(false);
                   }}
-                  className="config-modal-save-button"
+                  className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
                 >
                   <FaRegSave size={25} />
                 </button>

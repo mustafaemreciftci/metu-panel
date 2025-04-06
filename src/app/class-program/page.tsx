@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { ComponentType } from "react";
 import moment from "moment";
 import ReactModal from "react-modal";
 import { toast } from "react-toastify";
@@ -23,10 +23,10 @@ import { colors } from "@root/utils/colors";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
-const rooms = [];
-const courses = [];
-const roomsExtra = [];
-const instructors = [];
+const rooms: any = [];
+const courses: any = [];
+const roomsExtra: any = [];
+const instructors: any = [];
 
 const localizer = momentLocalizer(moment);
 
@@ -48,7 +48,7 @@ export default function Class() {
   const [filterClass, setFilterClass] = React.useState(null);
   const [filterInstructor, setFilterInstructor] = React.useState(null);
 
-  const [events, setEvents] = React.useState([]);
+  const [events, setEvents] = React.useState<any>([]);
   const [filterEvents, setFilterEvents] = React.useState(null);
 
   const [eventDeleteID, setEventDeleteID] = React.useState(null);
@@ -148,7 +148,7 @@ export default function Class() {
         }
 
         if (_event.recurrence === "d" || _event.recurrence === "o") {
-          for (let i = 0; i <= parseInt(daysInBetween); i += 1) {
+          for (let i = 0; i <= parseInt(daysInBetween.toString()); i += 1) {
             if (
               !exclude_dates.includes(
                 moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
@@ -272,7 +272,7 @@ export default function Class() {
   }, []);
 
   const handleFilterEvents = () => {
-    const _filterEvents = [];
+    const _filterEvents: any = [];
 
     if (
       filterRoom !== null ||
@@ -286,9 +286,9 @@ export default function Class() {
       ) {
         for (let _event of events) {
           if (
-            _event.room === filterRoom &&
-            _event.class === filterClass &&
-            _event.instructor === filterInstructor
+            (_event as any).room === filterRoom &&
+            (_event as any).class === filterClass &&
+            (_event as any).instructor === filterInstructor
           ) {
             _filterEvents.push(_event);
           }
@@ -300,8 +300,8 @@ export default function Class() {
       ) {
         for (let _event of events) {
           if (
-            _event.class === filterClass &&
-            _event.instructor === filterInstructor
+            (_event as any).class === filterClass &&
+            (_event as any).instructor === filterInstructor
           ) {
             _filterEvents.push(_event);
           }
@@ -313,8 +313,8 @@ export default function Class() {
       ) {
         for (let _event of events) {
           if (
-            _event.room === filterRoom &&
-            _event.instructor === filterInstructor
+            (_event as any).room === filterRoom &&
+            (_event as any).instructor === filterInstructor
           ) {
             _filterEvents.push(_event);
           }
@@ -325,7 +325,10 @@ export default function Class() {
         filterInstructor === null
       ) {
         for (let _event of events) {
-          if (_event.room === filterRoom && _event.class === filterClass) {
+          if (
+            (_event as any).room === filterRoom &&
+            (_event as any).class === filterClass
+          ) {
             _filterEvents.push(_event);
           }
         }
@@ -335,7 +338,7 @@ export default function Class() {
         filterInstructor === null
       ) {
         for (let _event of events) {
-          if (_event.room === filterRoom) {
+          if ((_event as any).room === filterRoom) {
             _filterEvents.push(_event);
           }
         }
@@ -345,7 +348,7 @@ export default function Class() {
         filterInstructor === null
       ) {
         for (let _event of events) {
-          if (_event.class === filterClass) {
+          if ((_event as any).class === filterClass) {
             _filterEvents.push(_event);
           }
         }
@@ -355,7 +358,7 @@ export default function Class() {
         filterInstructor !== null
       ) {
         for (let _event of events) {
-          if (_event.instructor === filterInstructor) {
+          if ((_event as any).instructor === filterInstructor) {
             _filterEvents.push(_event);
           }
         }
@@ -370,10 +373,9 @@ export default function Class() {
   React.useEffect(() => {
     handleFilterEvents();
   }, [filterRoom, filterClass, filterInstructor]);
-
-  const onSelectEvent = (event) => {
-    setEventDeleteID(event.id);
-    setEventDeleteDate(moment(event.start).format("YYYY-MM-DD"));
+  const onSelectEvent = (event: { id: string; start: Date }) => {
+    setEventDeleteID(event.id as any);
+    setEventDeleteDate(moment(event.start).format("YYYY-MM-DD") as any);
 
     setDeleteEventModalVisible(true);
   };
@@ -386,10 +388,10 @@ export default function Class() {
         <div className="w-[10vw]">
           <Creatable
             onChange={(data) => {
-              if (data.label === "Hepsi") {
+              if (data!.label === "Hepsi") {
                 setFilterRoom(null);
               } else {
-                setFilterRoom(data.label);
+                setFilterRoom(data!.label as any);
               }
             }}
             value={{ label: filterRoom === null ? "Yer" : filterRoom }}
@@ -407,10 +409,10 @@ export default function Class() {
         <div className="flex flex-row ml-[2vw]">
           <Creatable
             onChange={(data) => {
-              if (data.label === "Hepsi") {
+              if (data!.label === "Hepsi") {
                 setFilterClass(null);
               } else {
-                setFilterClass(data.label);
+                setFilterClass(data!.label as any);
               }
             }}
             value={{ label: filterClass === null ? "Ders" : filterClass }}
@@ -428,10 +430,10 @@ export default function Class() {
         <div className="flex flex-row ml-[2vw]">
           <Creatable
             onChange={(data) => {
-              if (data.label === "Hepsi") {
+              if (data!.label === "Hepsi") {
                 setFilterInstructor(null);
               } else {
-                setFilterInstructor(data.label);
+                setFilterInstructor(data!.label as any);
               }
             }}
             value={{
@@ -484,7 +486,6 @@ export default function Class() {
         }}
         events={filterEvents !== null ? filterEvents : events}
         selectable={true}
-        endAccessor="end"
         startAccessor="start"
         localizer={localizer}
         onSelectSlot={() => {
@@ -492,7 +493,12 @@ export default function Class() {
         }}
         style={{ height: "76vh" }}
         onSelectEvent={onSelectEvent}
-        eventPropGetter={(event) => {
+        eventPropGetter={(event: {
+          id: string;
+          start: Date;
+          class: any;
+          is_exam: boolean;
+        }) => {
           const classType = event.class.match(/(\d+)/)[0][0];
 
           let newStyle;
@@ -567,7 +573,8 @@ export default function Class() {
           };
         }}
         components={{
-          day: ({ date, localizer }) => localizer.format(date, "dddd"),
+          day: ({ date, localizer }: { date: any; localizer: any }) =>
+            localizer.format(date, "dddd"),
         }}
       />
 
@@ -604,7 +611,9 @@ export default function Class() {
 
         <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
           <Creatable
-            onChange={(data) => setUpdateRoom(data.label.split("|")[0].trim())}
+            onChange={(data: any) =>
+              setUpdateRoom(data.label.split("|")[0].trim())
+            }
             placeholder={"Yer"}
             options={roomsExtra}
           />
@@ -612,7 +621,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setUpdateClass(data.label)}
+            onChange={(data: any) => setUpdateClass(data.label)}
             placeholder={"Ders"}
             options={courses}
           />
@@ -620,7 +629,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setUpdateInstructor(data.label)}
+            onChange={(data: any) => setUpdateInstructor(data.label)}
             placeholder={"Hoca"}
             options={instructors}
           />
@@ -628,7 +637,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setUpdateRecurrence(data.value)}
+            onChange={(data: any) => setUpdateRecurrence(data.value)}
             placeholder={"Tekrar sıklığı"}
             options={[
               { value: "o", label: "Tek sefer" },
@@ -644,14 +653,14 @@ export default function Class() {
             <DatePicker
               className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
               selected={updateStartDate}
-              onChange={(date) => setUpdateStartDate(date)}
+              onChange={(date) => setUpdateStartDate(date!)}
               dateFormat={"dd/MM/yyyy"}
             />
 
             <DatePicker
               className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
               selected={updateEndDate}
-              onChange={(date) => setUpdateEndDate(date)}
+              onChange={(date) => setUpdateEndDate(date!)}
               dateFormat={"dd/MM/yyyy"}
             />
           </div>
@@ -661,7 +670,7 @@ export default function Class() {
           <div className="flex flex-row justify-around">
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setUpdateStartTime(data.value);
                 }}
                 placeholder={"Başlangıç Saati"}
@@ -688,7 +697,7 @@ export default function Class() {
 
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setUpdateEndTime(data.value);
                 }}
                 placeholder={"Bitiş Saati"}
@@ -860,7 +869,7 @@ export default function Class() {
 
         <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
           <Creatable
-            onChange={(data) => setRoom(data.label.split("|")[0].trim())}
+            onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
             placeholder={"Yer"}
             options={roomsExtra}
           />
@@ -868,7 +877,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setClass(data.label)}
+            onChange={(data: any) => setClass(data.label)}
             placeholder={"Ders"}
             options={courses}
           />
@@ -876,7 +885,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setInstructor(data.label)}
+            onChange={(data: any) => setInstructor(data.label)}
             placeholder={"Hoca"}
             options={instructors}
           />
@@ -884,7 +893,7 @@ export default function Class() {
           <div className="h-[5%]" />
 
           <Creatable
-            onChange={(data) => setRecurrence(data.value)}
+            onChange={(data: any) => setRecurrence(data.value)}
             placeholder={"Tekrar sıklığı"}
             options={[
               { value: "o", label: "Tek sefer" },
@@ -900,14 +909,14 @@ export default function Class() {
             <DatePicker
               className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
               selected={startDate}
-              onChange={(date) => setStartDate(date)}
+              onChange={(date: any) => setStartDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
 
             <DatePicker
               className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
               selected={endDate}
-              onChange={(date) => setEndDate(date)}
+              onChange={(date: any) => setEndDate(date)}
               dateFormat={"dd/MM/yyyy"}
             />
           </div>
@@ -917,7 +926,7 @@ export default function Class() {
           <div className="flex flex-row justify-around">
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setStartTime(data.value);
                 }}
                 placeholder={"Başlangıç Saati"}
@@ -944,7 +953,7 @@ export default function Class() {
 
             <div style={{ width: 250 }}>
               <Creatable
-                onChange={(data) => {
+                onChange={(data: any) => {
                   setEndTime(data.value);
                 }}
                 placeholder={"Bitiş Saati"}
