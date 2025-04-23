@@ -34,7 +34,7 @@ export default function Room() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (res.unauthorized === true) {
+    if (!res.loggedIn) {
       router.push("/login");
     } else {
       router.push("/class-program");

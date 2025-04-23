@@ -809,9 +809,11 @@ export const API = {
       "https://apimynos.cc.metu.edu.tr/handleAuth"
     );
 
-    console.log(result.data.unauthorized);
+    console.log(result.data);
 
-    return result.data;
+    if (result.data) {
+      return result.data;
+    }
   },
   /* auth end */
 };

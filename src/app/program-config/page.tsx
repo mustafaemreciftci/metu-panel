@@ -21,7 +21,7 @@ export default function Config() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (res.unauthorized === true) {
+    if (!res.loggedIn) {
       router.push("/login");
     } else {
       router.push("/class-program");
