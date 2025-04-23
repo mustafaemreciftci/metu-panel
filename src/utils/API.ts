@@ -805,5 +805,15 @@ export const API = {
       });
     }
   },
+
+  handleAuth: async () => {
+    const result = await axios.post(
+      "https://apimynos.cc.metu.edu.tr/handleAuth"
+    );
+
+    console.log(result.data);
+
+    return result.data;
+  },
   /* auth end */
 };

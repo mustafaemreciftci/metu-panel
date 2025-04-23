@@ -10,7 +10,7 @@ export default function Home() {
   const router = useRouter();
 
   const handleAuth = async () => {
-    const res = await API.getMeetingEvents();
+    const res = await API.handleAuth();
 
     if (res.loggedIn === false) {
       router.push("/login");
