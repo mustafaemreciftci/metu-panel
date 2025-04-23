@@ -46,6 +46,7 @@ export default function Class() {
   React.useEffect(() => {
     handleAuth();
   }, []);
+
   const [filterRoom, setFilterRoom] = React.useState(null);
   const [filterClass, setFilterClass] = React.useState(null);
   const [filterInstructor, setFilterInstructor] = React.useState(null);

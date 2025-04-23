@@ -13,6 +13,18 @@ export default function Login() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
+  const handleAuth = async () => {
+    const res = await API.handleAuth();
+
+    if (res.loggedIn !== false) {
+      router.push("/class-program");
+    }
+  };
+
+  React.useEffect(() => {
+    handleAuth();
+  }, []);
+
   return (
     <div className="gap-[12px] h-[100vh] flex flex-col items-center justify-center">
       <input
