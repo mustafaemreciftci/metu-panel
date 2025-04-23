@@ -259,7 +259,7 @@ export default function Schedule() {
       <div className="w-full h-full">
         <Header />
 
-        <div className="w-full h-[88%] flex items-center justify-center">
+        <div className="w-full h-[88%] flex flex-col items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>
