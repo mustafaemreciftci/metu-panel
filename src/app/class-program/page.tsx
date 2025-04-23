@@ -257,7 +257,9 @@ export default function Class() {
 
     setEvents(_events);
 
-    setLoaded(true);
+    setTimeout(() => {
+      setLoaded(true);
+    }, 2000);
   };
 
   const handleAuth = async () => {

@@ -291,7 +291,9 @@ export default function Config() {
       }
     }
 
-    setLoaded(true);
+    setTimeout(() => {
+      setLoaded(true);
+    }, 2000);
   };
 
   const handleAuth = async () => {

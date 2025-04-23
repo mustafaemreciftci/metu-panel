@@ -58,7 +58,9 @@ export default function Schedule() {
 
     setRooms(newRooms);
 
-    setLoaded(true);
+    setTimeout(() => {
+      setLoaded(true);
+    }, 2000);
   };
 
   const handleClassEvents = async () => {

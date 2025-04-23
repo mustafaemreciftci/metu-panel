@@ -220,7 +220,10 @@ export default function Room() {
     }
 
     setEvents(_events as any);
-    setLoaded(true);
+
+    setTimeout(() => {
+      setLoaded(true);
+    }, 2000);
   };
 
   const handleAuth = async () => {
