@@ -19,12 +19,12 @@ export default function Config() {
   const router = useRouter();
 
   const handleAuth = async () => {
-    const res = await API.getMeetingEvents();
+    const res = await API.handleAuth();
 
-    console.log(res);
-
-    if (res.loggedIn === false) {
+    if (res.unauthorized === true) {
       router.push("/login");
+    } else {
+      router.push("/class-program");
     }
   };
 

@@ -787,8 +787,6 @@ export const API = {
     try {
       const result = await axios.post("https://apimynos.cc.metu.edu.tr/logout");
 
-      console.log(result.data);
-
       return result.data;
     } catch (error) {
       console.error(error);
@@ -811,7 +809,7 @@ export const API = {
       "https://apimynos.cc.metu.edu.tr/handleAuth"
     );
 
-    console.log(result.data);
+    console.log(result.data.unauthorized);
 
     return result.data;
   },
