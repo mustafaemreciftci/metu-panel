@@ -1129,10 +1129,10 @@ export default function Room() {
     );
   } else {
     return (
-      <div className="w-full h-full">
+      <div className="fw-[100vw] h-[100vh]">
         <Header />
 
-        <div className="h-[88%] flex items-center justify-center">
+        <div className="h-[88vh] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>
