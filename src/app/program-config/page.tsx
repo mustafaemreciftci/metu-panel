@@ -21,8 +21,10 @@ export default function Config() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (res.loggedIn === false || res.role !== "admin") {
+    if (res.loggedIn === false) {
       router.push("/login");
+    } else if (res.role !== "admin") {
+      router.push("/class-program");
     } else {
       router.push("/program-config");
     }
