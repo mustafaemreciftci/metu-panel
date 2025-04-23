@@ -911,14 +911,14 @@ export default function Class() {
 
             <div className="flex flex-row justify-around">
               <DatePicker
-                className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                className="w-[200px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
                 selected={startDate}
                 onChange={(date: any) => setStartDate(date)}
                 dateFormat={"dd/MM/yyyy"}
               />
 
               <DatePicker
-                className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                className="w-[200px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
                 selected={endDate}
                 onChange={(date: any) => setEndDate(date)}
                 dateFormat={"dd/MM/yyyy"}
