@@ -256,10 +256,10 @@ export default function Schedule() {
     );
   } else {
     return (
-      <div className="flex w-full h-full">
+      <div className="w-full h-full">
         <Header />
 
-        <div className="h-[88%] flex items-center justify-center">
+        <div className="w-full h-[88%] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>
