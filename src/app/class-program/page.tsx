@@ -9,6 +9,7 @@ import { FaRegSave } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Creatable from "react-select/creatable";
+import { OrbitProgress } from "react-loading-indicators";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 
 // components
@@ -33,19 +34,7 @@ const localizer = momentLocalizer(moment);
 export default function Class() {
   const router = useRouter();
 
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
-
-    if (res.loggedIn === false) {
-      router.push("/login");
-    } else {
-      router.push("/class-program");
-    }
-  };
-
-  React.useEffect(() => {
-    handleAuth();
-  }, []);
+  const [loaded, setLoaded] = React.useState(false);
 
   const [filterRoom, setFilterRoom] = React.useState(null);
   const [filterClass, setFilterClass] = React.useState(null);
@@ -267,9 +256,20 @@ export default function Class() {
     }
 
     setEvents(_events);
+
+    setLoaded(true);
+  };
+
+  const handleAuth = async () => {
+    const res = await API.handleAuth();
+
+    if (res.loggedIn === false) {
+      router.push("/login");
+    }
   };
 
   React.useEffect(() => {
+    handleAuth();
     handleData();
     handleClassEvents();
   }, []);
@@ -383,227 +383,495 @@ export default function Class() {
     dialogRef1.current?.showModal();
   };
 
-  return (
-    <div className="flex-1">
-      <Header />
+  if (loaded) {
+    return (
+      <div className="flex-1">
+        <Header />
 
-      <div className="flex flex-row mt-[2vh] ml-[2.5vw]">
-        <div className="w-[10vw]">
-          <Creatable
-            onChange={(data) => {
-              if (data!.label === "Hepsi") {
-                setFilterRoom(null);
-              } else {
-                setFilterRoom(data!.label as any);
-              }
+        <div className="flex flex-row mt-[2vh] ml-[2.5vw]">
+          <div className="w-[10vw]">
+            <Creatable
+              onChange={(data) => {
+                if (data!.label === "Hepsi") {
+                  setFilterRoom(null);
+                } else {
+                  setFilterRoom(data!.label as any);
+                }
+              }}
+              value={{ label: filterRoom === null ? "Yer" : filterRoom }}
+              placeholder={"Yer"}
+              options={rooms}
+              styles={{
+                menu: (styles) => ({
+                  ...styles,
+                  zIndex: 99,
+                }),
+              }}
+            />
+          </div>
+
+          <div className="flex flex-row ml-[2vw]">
+            <Creatable
+              onChange={(data) => {
+                if (data!.label === "Hepsi") {
+                  setFilterClass(null);
+                } else {
+                  setFilterClass(data!.label as any);
+                }
+              }}
+              value={{ label: filterClass === null ? "Ders" : filterClass }}
+              placeholder={"Ders"}
+              options={courses}
+              styles={{
+                menu: (styles) => ({
+                  ...styles,
+                  zIndex: 99,
+                }),
+              }}
+            />
+          </div>
+
+          <div className="flex flex-row ml-[2vw]">
+            <Creatable
+              onChange={(data) => {
+                if (data!.label === "Hepsi") {
+                  setFilterInstructor(null);
+                } else {
+                  setFilterInstructor(data!.label as any);
+                }
+              }}
+              value={{
+                label: filterInstructor === null ? "Hoca" : filterInstructor,
+              }}
+              placeholder={"Hoca"}
+              options={instructors}
+              styles={{
+                menu: (styles) => ({
+                  ...styles,
+                  zIndex: 99,
+                }),
+              }}
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setFilterRoom(null);
+              setFilterClass(null);
+              setFilterInstructor(null);
+
+              setFilterEvents(null);
             }}
-            value={{ label: filterRoom === null ? "Yer" : filterRoom }}
-            placeholder={"Yer"}
-            options={rooms}
-            styles={{
-              menu: (styles) => ({
-                ...styles,
-                zIndex: 99,
-              }),
-            }}
-          />
+            className="w-[40px] h-[40px] flex ml-[2vw] items-center justify-center rounded-[20px] bg-[#c00000]"
+          >
+            <IoMdClose size={25} color="white" />
+          </button>
         </div>
 
-        <div className="flex flex-row ml-[2vw]">
-          <Creatable
-            onChange={(data) => {
-              if (data!.label === "Hepsi") {
-                setFilterClass(null);
-              } else {
-                setFilterClass(data!.label as any);
-              }
-            }}
-            value={{ label: filterClass === null ? "Ders" : filterClass }}
-            placeholder={"Ders"}
-            options={courses}
-            styles={{
-              menu: (styles) => ({
-                ...styles,
-                zIndex: 99,
-              }),
-            }}
-          />
-        </div>
-
-        <div className="flex flex-row ml-[2vw]">
-          <Creatable
-            onChange={(data) => {
-              if (data!.label === "Hepsi") {
-                setFilterInstructor(null);
-              } else {
-                setFilterInstructor(data!.label as any);
-              }
-            }}
-            value={{
-              label: filterInstructor === null ? "Hoca" : filterInstructor,
-            }}
-            placeholder={"Hoca"}
-            options={instructors}
-            styles={{
-              menu: (styles) => ({
-                ...styles,
-                zIndex: 99,
-              }),
-            }}
-          />
-        </div>
-
-        <button
-          onClick={() => {
-            setFilterRoom(null);
-            setFilterClass(null);
-            setFilterInstructor(null);
-
-            setFilterEvents(null);
+        <Calendar
+          className="w-[95vw] h-[76vh] mt-[2vh] ml-[2.5vw]"
+          messages={{
+            date: "Tarih",
+            time: "Zaman",
+            event: "Ders",
+            allDay: "Tüm Gün",
+            week: "Hafta",
+            work_week: "İş Günü",
+            day: "Gün",
+            month: "Ay",
+            previous: "Geri",
+            next: "İleri",
+            yesterday: "Dün",
+            tomorrow: "Yarın",
+            today: "Bugün",
+            agenda: "Ajanda",
+            showMore: (count) => "+" + count + " etkinlik",
+            noEventsInRange: "Bu aralıkta dolu gün bulunamadı.",
           }}
-          className="w-[40px] h-[40px] flex ml-[2vw] items-center justify-center rounded-[20px] bg-[#c00000]"
-        >
-          <IoMdClose size={25} color="white" />
-        </button>
-      </div>
+          events={filterEvents !== null ? filterEvents : events}
+          selectable={true}
+          startAccessor="start"
+          localizer={localizer}
+          onSelectSlot={() => {
+            setModalVisible(true);
+          }}
+          style={{ height: "76vh" }}
+          onSelectEvent={onSelectEvent}
+          eventPropGetter={(event: {
+            id: string;
+            start: Date;
+            class: any;
+            is_exam: boolean;
+          }) => {
+            const classType = event.class.match(/(\d+)/)[0][0];
 
-      <Calendar
-        className="w-[95vw] h-[76vh] mt-[2vh] ml-[2.5vw]"
-        messages={{
-          date: "Tarih",
-          time: "Zaman",
-          event: "Ders",
-          allDay: "Tüm Gün",
-          week: "Hafta",
-          work_week: "İş Günü",
-          day: "Gün",
-          month: "Ay",
-          previous: "Geri",
-          next: "İleri",
-          yesterday: "Dün",
-          tomorrow: "Yarın",
-          today: "Bugün",
-          agenda: "Ajanda",
-          showMore: (count) => "+" + count + " etkinlik",
-          noEventsInRange: "Bu aralıkta dolu gün bulunamadı.",
-        }}
-        events={filterEvents !== null ? filterEvents : events}
-        selectable={true}
-        startAccessor="start"
-        localizer={localizer}
-        onSelectSlot={() => {
-          setModalVisible(true);
-        }}
-        style={{ height: "76vh" }}
-        onSelectEvent={onSelectEvent}
-        eventPropGetter={(event: {
-          id: string;
-          start: Date;
-          class: any;
-          is_exam: boolean;
-        }) => {
-          const classType = event.class.match(/(\d+)/)[0][0];
+            let newStyle;
 
-          let newStyle;
-
-          if (event.is_exam) {
-            if (classType === "1") {
+            if (event.is_exam) {
+              if (classType === "1") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.exam,
+                };
+              } else if (classType === "2") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.exam,
+                };
+              } else if (classType === "3") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.exam,
+                };
+              } else if (classType === "4") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.exam,
+                };
+              } else {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.exam,
+                };
+              }
+            } else if (classType === "1") {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
-                backgroundColor: colors.exam,
+                backgroundColor: colors.class1,
               };
             } else if (classType === "2") {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
-                backgroundColor: colors.exam,
+                backgroundColor: colors.class2,
               };
             } else if (classType === "3") {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
-                backgroundColor: colors.exam,
+                backgroundColor: colors.class3,
               };
             } else if (classType === "4") {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
-                backgroundColor: colors.exam,
+                backgroundColor: colors.class4,
               };
             } else {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
-                backgroundColor: colors.exam,
+                backgroundColor: colors.class0,
               };
             }
-          } else if (classType === "1") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class1,
-            };
-          } else if (classType === "2") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class2,
-            };
-          } else if (classType === "3") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class3,
-            };
-          } else if (classType === "4") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class4,
-            };
-          } else {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class0,
-            };
-          }
 
-          return {
-            className: "",
-            style: newStyle,
-          };
-        }}
-        components={{
-          day: ({ date, localizer }: { date: any; localizer: any }) =>
-            localizer.format(date, "dddd"),
-        }}
-      />
+            return {
+              className: "",
+              style: newStyle,
+            };
+          }}
+          components={{
+            day: ({ date, localizer }: { date: any; localizer: any }) =>
+              localizer.format(date, "dddd"),
+          }}
+        />
 
-      <dialog ref={dialogRef1} className="modal">
-        <div className="modal-box h-[70vh]">
-          <div
-            className="flex pl-[5%] pr-[5%] flex-row justify-between"
-            id="class-delete-modal-header"
-          >
-            <h2 className="text-2xl">Ders - Etkinlik Düzenle</h2>
+        <dialog ref={dialogRef1} className="modal">
+          <div className="modal-box h-[70vh]">
+            <div
+              className="flex pl-[5%] pr-[5%] flex-row justify-between"
+              id="class-delete-modal-header"
+            >
+              <h2 className="text-2xl">Ders - Etkinlik Düzenle</h2>
+
+              <button
+                className="text-2xl bg-white"
+                onClick={() => dialogRef1.current?.close()}
+              >
+                <IoMdClose />
+              </button>
+            </div>
+
+            <div className="h-[10%]" />
+
+            <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
+              <Creatable
+                onChange={(data: any) =>
+                  setUpdateRoom(data.label.split("|")[0].trim())
+                }
+                placeholder={"Yer"}
+                options={roomsExtra}
+              />
+
+              <div className="h-[5%]" />
+
+              <Creatable
+                onChange={(data: any) => setUpdateClass(data.label)}
+                placeholder={"Ders"}
+                options={courses}
+              />
+
+              <div className="h-[5%]" />
+
+              <Creatable
+                onChange={(data: any) => setUpdateInstructor(data.label)}
+                placeholder={"Hoca"}
+                options={instructors}
+              />
+
+              <div className="h-[5%]" />
+
+              <Creatable
+                onChange={(data: any) => setUpdateRecurrence(data.value)}
+                placeholder={"Tekrar sıklığı"}
+                options={[
+                  { value: "o", label: "Tek sefer" },
+                  { value: "d", label: "Her gün" },
+                  { value: "w", label: "Her hafta" },
+                  { value: "m", label: "Her ay" },
+                ]}
+              />
+
+              <div className="h-[5%]" />
+
+              <div className="flex flex-row justify-around">
+                <DatePicker
+                  className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                  selected={updateStartDate}
+                  onChange={(date) => setUpdateStartDate(date!)}
+                  dateFormat={"dd/MM/yyyy"}
+                />
+
+                <div className="w-4" />
+
+                <DatePicker
+                  className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                  selected={updateEndDate}
+                  onChange={(date) => setUpdateEndDate(date!)}
+                  dateFormat={"dd/MM/yyyy"}
+                />
+              </div>
+
+              <div className="h-[5%]" />
+
+              <div className="flex flex-row justify-around">
+                <div className="w-80">
+                  <Creatable
+                    onChange={(data: any) => {
+                      setUpdateStartTime(data.value);
+                    }}
+                    placeholder={"Başlangıç Saati"}
+                    options={[
+                      { value: "8:40:00", label: "8:40" },
+                      { value: "9:40:00", label: "9:40" },
+                      { value: "10:40:00", label: "10:40" },
+                      { value: "11:40:00", label: "11:40" },
+                      { value: "12:40:00", label: "12:40" },
+                      { value: "13:40:00", label: "13:40" },
+                      { value: "14:40:00", label: "14:40" },
+                      { value: "15:40:00", label: "15:40" },
+                      { value: "16:40:00", label: "16:40" },
+                      { value: "17:40:00", label: "17:40" },
+                      { value: "18:40:00", label: "18:40" },
+                      { value: "19:40:00", label: "19:40" },
+                      { value: "20:40:00", label: "20:40" },
+                      { value: "21:40:00", label: "21:40" },
+                      { value: "22:40:00", label: "22:40" },
+                      { value: "23:40:00", label: "23:40" },
+                    ]}
+                  />
+                </div>
+
+                <div className="w-4" />
+
+                <div className="w-80">
+                  <Creatable
+                    onChange={(data: any) => {
+                      setUpdateEndTime(data.value);
+                    }}
+                    placeholder={"Bitiş Saati"}
+                    options={[
+                      { value: "8:40:00", label: "8:40" },
+                      { value: "9:40:00", label: "9:40" },
+                      { value: "10:40:00", label: "10:40" },
+                      { value: "11:40:00", label: "11:40" },
+                      { value: "12:40:00", label: "12:40" },
+                      { value: "13:40:00", label: "13:40" },
+                      { value: "14:40:00", label: "14:40" },
+                      { value: "15:40:00", label: "15:40" },
+                      { value: "16:40:00", label: "16:40" },
+                      { value: "17:40:00", label: "17:40" },
+                      { value: "18:40:00", label: "18:40" },
+                      { value: "19:40:00", label: "19:40" },
+                      { value: "20:40:00", label: "20:40" },
+                      { value: "21:40:00", label: "21:40" },
+                      { value: "22:40:00", label: "22:40" },
+                      { value: "23:40:00", label: "23:40" },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              <div className="h-[5%]" />
+
+              <label className="flex items-center">
+                <input
+                  className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
+                  type="checkbox"
+                  checked={updateIsExam}
+                  onChange={() => {
+                    setUpdateIsExam(!updateIsExam);
+                  }}
+                />
+                &nbsp;&nbsp;&nbsp;Sınavlar için bu kutucuğu işaretleyin.
+              </label>
+            </div>
+
+            <div className="modal-action mt-12 flex justify-center items-center">
+              <button
+                className="btn btn-md btn-secondary"
+                onClick={async () => {
+                  await API.deleteClassEvent(eventDeleteID, eventDeleteDate);
+
+                  handleClassEvents();
+
+                  dialogRef1.current?.close();
+                }}
+              >
+                Sadece Bunu Sil
+              </button>
+
+              <button
+                className="btn btn-md btn-secondary"
+                onClick={async () => {
+                  await API.deleteClassEvents(eventDeleteID);
+
+                  handleClassEvents();
+
+                  dialogRef1.current?.close();
+                }}
+              >
+                Hepsini Sil
+              </button>
+
+              <button
+                onClick={async () => {
+                  if (
+                    _updateClass !== null &&
+                    updateInstructor !== null &&
+                    updateStartDate !== null &&
+                    updateEndDate !== null &&
+                    updateStartTime !== null &&
+                    updateEndTime !== null &&
+                    updateRecurrence !== null &&
+                    updateRoom !== null
+                  ) {
+                    if (recurrence === "o") {
+                      if (
+                        startDate.getDate() !== undefined &&
+                        endDate.getDate() !== undefined &&
+                        startDate.getDate() === endDate.getDate()
+                      ) {
+                        await API.updateClassEvent(
+                          eventDeleteID,
+                          _updateClass,
+                          updateInstructor,
+                          updateStartDate,
+                          updateEndDate,
+                          updateStartTime,
+                          updateEndTime,
+                          updateRecurrence,
+                          updateRoom,
+                          updateIsExam
+                        );
+
+                        handleClassEvents();
+
+                        dialogRef1.current?.close();
+                      } else {
+                        toast.error(
+                          "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                          {
+                            theme: "light",
+                            autoClose: 3000,
+                            draggable: true,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            progress: undefined,
+                            hideProgressBar: false,
+                            position: "bottom-center",
+                          }
+                        );
+                      }
+                    } else {
+                      await API.updateClassEvent(
+                        eventDeleteID,
+                        _updateClass,
+                        updateInstructor,
+                        updateStartDate,
+                        updateEndDate,
+                        updateStartTime,
+                        updateEndTime,
+                        updateRecurrence,
+                        updateRoom,
+                        updateIsExam
+                      );
+
+                      handleClassEvents();
+
+                      dialogRef1.current?.close();
+                    }
+                  }
+                }}
+                className="btn btn-primary w-14 h-14 flex items-center justify-center rounded-full"
+              >
+                <FaRegSave color="white" size={20} />
+              </button>
+            </div>
+          </div>
+
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+
+        <ReactModal
+          style={{
+            overlay: {
+              zIndex: 99,
+              backgroundColor: "rgba(0, 0, 0, 0)",
+            },
+            content: {
+              top: "10vh",
+              left: "30vw",
+              width: "40vw",
+              height: "80vh",
+              backgroundColor: "white",
+            },
+          }}
+          ariaHideApp={false}
+          isOpen={modalVisible}
+        >
+          <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
+            <h2>Ders - Etkinlik Ekle</h2>
 
             <button
               className="text-2xl bg-white"
-              onClick={() => dialogRef1.current?.close()}
+              onClick={() => setModalVisible(false)}
             >
               <IoMdClose />
             </button>
           </div>
 
-          <div className="h-[10%]" />
-
           <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
             <Creatable
-              onChange={(data: any) =>
-                setUpdateRoom(data.label.split("|")[0].trim())
-              }
+              onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
               placeholder={"Yer"}
               options={roomsExtra}
             />
@@ -611,7 +879,7 @@ export default function Class() {
             <div className="h-[5%]" />
 
             <Creatable
-              onChange={(data: any) => setUpdateClass(data.label)}
+              onChange={(data: any) => setClass(data.label)}
               placeholder={"Ders"}
               options={courses}
             />
@@ -619,7 +887,7 @@ export default function Class() {
             <div className="h-[5%]" />
 
             <Creatable
-              onChange={(data: any) => setUpdateInstructor(data.label)}
+              onChange={(data: any) => setInstructor(data.label)}
               placeholder={"Hoca"}
               options={instructors}
             />
@@ -627,7 +895,7 @@ export default function Class() {
             <div className="h-[5%]" />
 
             <Creatable
-              onChange={(data: any) => setUpdateRecurrence(data.value)}
+              onChange={(data: any) => setRecurrence(data.value)}
               placeholder={"Tekrar sıklığı"}
               options={[
                 { value: "o", label: "Tek sefer" },
@@ -641,18 +909,16 @@ export default function Class() {
 
             <div className="flex flex-row justify-around">
               <DatePicker
-                className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-                selected={updateStartDate}
-                onChange={(date) => setUpdateStartDate(date!)}
+                className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                selected={startDate}
+                onChange={(date: any) => setStartDate(date)}
                 dateFormat={"dd/MM/yyyy"}
               />
 
-              <div className="w-4" />
-
               <DatePicker
-                className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-                selected={updateEndDate}
-                onChange={(date) => setUpdateEndDate(date!)}
+                className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                selected={endDate}
+                onChange={(date: any) => setEndDate(date)}
                 dateFormat={"dd/MM/yyyy"}
               />
             </div>
@@ -660,10 +926,10 @@ export default function Class() {
             <div className="h-[5%]" />
 
             <div className="flex flex-row justify-around">
-              <div className="w-80">
+              <div style={{ width: 250 }}>
                 <Creatable
                   onChange={(data: any) => {
-                    setUpdateStartTime(data.value);
+                    setStartTime(data.value);
                   }}
                   placeholder={"Başlangıç Saati"}
                   options={[
@@ -687,12 +953,10 @@ export default function Class() {
                 />
               </div>
 
-              <div className="w-4" />
-
-              <div className="w-80">
+              <div style={{ width: 250 }}>
                 <Creatable
                   onChange={(data: any) => {
-                    setUpdateEndTime(data.value);
+                    setEndTime(data.value);
                   }}
                   placeholder={"Bitiş Saati"}
                   options={[
@@ -717,59 +981,31 @@ export default function Class() {
               </div>
             </div>
 
-            <div className="h-[5%]" />
+            <div className="h-[10%]" />
 
             <label className="flex items-center">
               <input
-                className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
+                className="w-[20px] h-[20px] border-[1px] border-solid border-[#b8b8b8]"
                 type="checkbox"
-                checked={updateIsExam}
+                checked={isExam}
                 onChange={() => {
-                  setUpdateIsExam(!updateIsExam);
+                  setIsExam(!isExam);
                 }}
               />
               &nbsp;&nbsp;&nbsp;Sınavlar için bu kutucuğu işaretleyin.
             </label>
-          </div>
-
-          <div className="modal-action mt-12 flex justify-center items-center">
-            <button
-              className="btn btn-md btn-secondary"
-              onClick={async () => {
-                await API.deleteClassEvent(eventDeleteID, eventDeleteDate);
-
-                handleClassEvents();
-
-                dialogRef1.current?.close();
-              }}
-            >
-              Sadece Bunu Sil
-            </button>
-
-            <button
-              className="btn btn-md btn-secondary"
-              onClick={async () => {
-                await API.deleteClassEvents(eventDeleteID);
-
-                handleClassEvents();
-
-                dialogRef1.current?.close();
-              }}
-            >
-              Hepsini Sil
-            </button>
 
             <button
               onClick={async () => {
                 if (
-                  _updateClass !== null &&
-                  updateInstructor !== null &&
-                  updateStartDate !== null &&
-                  updateEndDate !== null &&
-                  updateStartTime !== null &&
-                  updateEndTime !== null &&
-                  updateRecurrence !== null &&
-                  updateRoom !== null
+                  _class !== null &&
+                  instructor !== null &&
+                  startDate !== null &&
+                  endDate !== null &&
+                  startTime !== null &&
+                  endTime !== null &&
+                  recurrence !== null &&
+                  room !== null
                 ) {
                   if (recurrence === "o") {
                     if (
@@ -777,22 +1013,21 @@ export default function Class() {
                       endDate.getDate() !== undefined &&
                       startDate.getDate() === endDate.getDate()
                     ) {
-                      await API.updateClassEvent(
-                        eventDeleteID,
-                        _updateClass,
-                        updateInstructor,
-                        updateStartDate,
-                        updateEndDate,
-                        updateStartTime,
-                        updateEndTime,
-                        updateRecurrence,
-                        updateRoom,
-                        updateIsExam
+                      await API.createClassEvent(
+                        _class,
+                        instructor,
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        recurrence,
+                        room,
+                        isExam
                       );
 
                       handleClassEvents();
 
-                      dialogRef1.current?.close();
+                      setModalVisible(false);
                     } else {
                       toast.error(
                         "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
@@ -809,209 +1044,6 @@ export default function Class() {
                       );
                     }
                   } else {
-                    await API.updateClassEvent(
-                      eventDeleteID,
-                      _updateClass,
-                      updateInstructor,
-                      updateStartDate,
-                      updateEndDate,
-                      updateStartTime,
-                      updateEndTime,
-                      updateRecurrence,
-                      updateRoom,
-                      updateIsExam
-                    );
-
-                    handleClassEvents();
-
-                    dialogRef1.current?.close();
-                  }
-                }
-              }}
-              className="btn btn-primary w-14 h-14 flex items-center justify-center rounded-full"
-            >
-              <FaRegSave color="white" size={20} />
-            </button>
-          </div>
-        </div>
-
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
-
-      <ReactModal
-        style={{
-          overlay: {
-            zIndex: 99,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-          },
-          content: {
-            top: "10vh",
-            left: "30vw",
-            width: "40vw",
-            height: "80vh",
-            backgroundColor: "white",
-          },
-        }}
-        ariaHideApp={false}
-        isOpen={modalVisible}
-      >
-        <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
-          <h2>Ders - Etkinlik Ekle</h2>
-
-          <button
-            className="text-2xl bg-white"
-            onClick={() => setModalVisible(false)}
-          >
-            <IoMdClose />
-          </button>
-        </div>
-
-        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
-          <Creatable
-            onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
-            placeholder={"Yer"}
-            options={roomsExtra}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setClass(data.label)}
-            placeholder={"Ders"}
-            options={courses}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setInstructor(data.label)}
-            placeholder={"Hoca"}
-            options={instructors}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setRecurrence(data.value)}
-            placeholder={"Tekrar sıklığı"}
-            options={[
-              { value: "o", label: "Tek sefer" },
-              { value: "d", label: "Her gün" },
-              { value: "w", label: "Her hafta" },
-              { value: "m", label: "Her ay" },
-            ]}
-          />
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <DatePicker
-              className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-              selected={startDate}
-              onChange={(date: any) => setStartDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-
-            <DatePicker
-              className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-              selected={endDate}
-              onChange={(date: any) => setEndDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-          </div>
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setStartTime(data.value);
-                }}
-                placeholder={"Başlangıç Saati"}
-                options={[
-                  { value: "8:40:00", label: "8:40" },
-                  { value: "9:40:00", label: "9:40" },
-                  { value: "10:40:00", label: "10:40" },
-                  { value: "11:40:00", label: "11:40" },
-                  { value: "12:40:00", label: "12:40" },
-                  { value: "13:40:00", label: "13:40" },
-                  { value: "14:40:00", label: "14:40" },
-                  { value: "15:40:00", label: "15:40" },
-                  { value: "16:40:00", label: "16:40" },
-                  { value: "17:40:00", label: "17:40" },
-                  { value: "18:40:00", label: "18:40" },
-                  { value: "19:40:00", label: "19:40" },
-                  { value: "20:40:00", label: "20:40" },
-                  { value: "21:40:00", label: "21:40" },
-                  { value: "22:40:00", label: "22:40" },
-                  { value: "23:40:00", label: "23:40" },
-                ]}
-              />
-            </div>
-
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setEndTime(data.value);
-                }}
-                placeholder={"Bitiş Saati"}
-                options={[
-                  { value: "8:40:00", label: "8:40" },
-                  { value: "9:40:00", label: "9:40" },
-                  { value: "10:40:00", label: "10:40" },
-                  { value: "11:40:00", label: "11:40" },
-                  { value: "12:40:00", label: "12:40" },
-                  { value: "13:40:00", label: "13:40" },
-                  { value: "14:40:00", label: "14:40" },
-                  { value: "15:40:00", label: "15:40" },
-                  { value: "16:40:00", label: "16:40" },
-                  { value: "17:40:00", label: "17:40" },
-                  { value: "18:40:00", label: "18:40" },
-                  { value: "19:40:00", label: "19:40" },
-                  { value: "20:40:00", label: "20:40" },
-                  { value: "21:40:00", label: "21:40" },
-                  { value: "22:40:00", label: "22:40" },
-                  { value: "23:40:00", label: "23:40" },
-                ]}
-              />
-            </div>
-          </div>
-
-          <div className="h-[10%]" />
-
-          <label className="flex items-center">
-            <input
-              className="w-[20px] h-[20px] border-[1px] border-solid border-[#b8b8b8]"
-              type="checkbox"
-              checked={isExam}
-              onChange={() => {
-                setIsExam(!isExam);
-              }}
-            />
-            &nbsp;&nbsp;&nbsp;Sınavlar için bu kutucuğu işaretleyin.
-          </label>
-
-          <button
-            onClick={async () => {
-              if (
-                _class !== null &&
-                instructor !== null &&
-                startDate !== null &&
-                endDate !== null &&
-                startTime !== null &&
-                endTime !== null &&
-                recurrence !== null &&
-                room !== null
-              ) {
-                if (recurrence === "o") {
-                  if (
-                    startDate.getDate() !== undefined &&
-                    endDate.getDate() !== undefined &&
-                    startDate.getDate() === endDate.getDate()
-                  ) {
                     await API.createClassEvent(
                       _class,
                       instructor,
@@ -1027,46 +1059,26 @@ export default function Class() {
                     handleClassEvents();
 
                     setModalVisible(false);
-                  } else {
-                    toast.error(
-                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
-                      {
-                        theme: "light",
-                        autoClose: 3000,
-                        draggable: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        progress: undefined,
-                        hideProgressBar: false,
-                        position: "bottom-center",
-                      }
-                    );
                   }
-                } else {
-                  await API.createClassEvent(
-                    _class,
-                    instructor,
-                    startDate,
-                    endDate,
-                    startTime,
-                    endTime,
-                    recurrence,
-                    room,
-                    isExam
-                  );
-
-                  handleClassEvents();
-
-                  setModalVisible(false);
                 }
-              }
-            }}
-            className="w-16 h-16 right-[50px] bottom-[30px] flex justify-center items-center border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-          >
-            <FaRegSave color="white" size={25} />
-          </button>
+              }}
+              className="w-16 h-16 right-[50px] bottom-[30px] flex justify-center items-center border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
+            >
+              <FaRegSave color="white" size={25} />
+            </button>
+          </div>
+        </ReactModal>
+      </div>
+    );
+  } else {
+    return (
+      <div className="w-full h-full">
+        <Header />
+
+        <div className="h-[88%] flex items-center justify-center">
+          <OrbitProgress color={colors.metu_red} size="small" />
         </div>
-      </ReactModal>
-    </div>
-  );
+      </div>
+    );
+  }
 }

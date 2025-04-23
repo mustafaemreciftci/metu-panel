@@ -18,26 +18,9 @@ import "moment/locale/tr.js";
 export default function Config() {
   const router = useRouter();
 
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
-
-    if (res.loggedIn === false) {
-      router.push("/login");
-    } else if (res.role !== "admin") {
-      router.push("/class-program");
-    } else {
-      router.push("/program-config");
-    }
-  };
-
-  React.useEffect(() => {
-    handleAuth();
-  }, []);
-
   const [loaded, setLoaded] = React.useState(false);
 
   const [modalType, setModalType] = React.useState("");
-  const [modalVisible, setModalVisible] = React.useState(false);
 
   const [className, setClassName] = React.useState("");
 
@@ -311,7 +294,18 @@ export default function Config() {
     setLoaded(true);
   };
 
+  const handleAuth = async () => {
+    const res = await API.handleAuth();
+
+    if (res.loggedIn === false) {
+      router.push("/login");
+    } else if (res.role !== "admin") {
+      router.push("/class-program");
+    }
+  };
+
   React.useEffect(() => {
+    handleAuth();
     handleData();
   }, []);
 
@@ -512,8 +506,6 @@ export default function Config() {
                     await API.addInstructor(instructorName);
 
                     handleData("instructors");
-
-                    setModalVisible(false);
                   }}
                   className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
                 >
@@ -571,8 +563,6 @@ export default function Config() {
                     );
 
                     handleData("classRooms");
-
-                    setModalVisible(false);
                   }}
                   className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
                 >
@@ -606,8 +596,6 @@ export default function Config() {
                     await API.addClass(className);
 
                     handleData("courses");
-
-                    setModalVisible(false);
                   }}
                   className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
                 >
@@ -656,8 +644,6 @@ export default function Config() {
                       );
 
                       handleData("meetingRooms");
-
-                      setModalVisible(false);
                     }}
                     className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
                   >
@@ -676,17 +662,10 @@ export default function Config() {
     );
   } else {
     return (
-      <div style={{ width: "100vw", height: "100vh" }}>
+      <div className="w-full h-full">
         <Header />
 
-        <div
-          style={{
-            height: "88%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div className="h-[88%] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>

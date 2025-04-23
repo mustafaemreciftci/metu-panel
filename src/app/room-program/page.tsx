@@ -9,6 +9,7 @@ import { FaRegSave } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Creatable from "react-select/creatable";
+import { OrbitProgress } from "react-loading-indicators";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 
 // components
@@ -31,19 +32,7 @@ const localizer = momentLocalizer(moment);
 export default function Room() {
   const router = useRouter();
 
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
-
-    if (res.loggedIn === false) {
-      router.push("/login");
-    } else {
-      router.push("/room-program");
-    }
-  };
-
-  React.useEffect(() => {
-    handleAuth();
-  }, []);
+  const [loaded, setLoaded] = React.useState(false);
 
   const [filterRoom, setFilterRoom] = React.useState(null);
   const [filterInstructor, setFilterInstructor] = React.useState(null);
@@ -231,9 +220,23 @@ export default function Room() {
     }
 
     setEvents(_events as any);
+    setLoaded(true);
+  };
+
+  const handleAuth = async () => {
+    const res = await API.handleAuth();
+
+    if (res.loggedIn === false) {
+      router.push("/login");
+    }
   };
 
   React.useEffect(() => {
+    handleAuth();
+  }, []);
+
+  React.useEffect(() => {
+    handleAuth();
     handleData();
     handleMeetingEvents();
   }, []);
@@ -282,104 +285,130 @@ export default function Room() {
     setDeleteEventModalVisible(true);
   };
 
-  return (
-    <div className="flex-1">
-      <Header />
+  if (loaded) {
+    return (
+      <div className="flex-1">
+        <Header />
 
-      <div className="flex flex-row mt-[2vh] ml-[2.5vw]">
-        <div className="w-[10vw]">
-          <Creatable
-            onChange={(data) => {
-              if (data!.label === "Hepsi") {
-                setFilterRoom(null);
-              } else {
-                setFilterRoom(data!.label as any);
-              }
+        <div className="flex flex-row mt-[2vh] ml-[2.5vw]">
+          <div className="w-[10vw]">
+            <Creatable
+              onChange={(data) => {
+                if (data!.label === "Hepsi") {
+                  setFilterRoom(null);
+                } else {
+                  setFilterRoom(data!.label as any);
+                }
+              }}
+              value={{ label: filterRoom === null ? "Yer" : filterRoom }}
+              placeholder={"Yer"}
+              options={rooms}
+              styles={{
+                menu: (styles) => ({
+                  ...styles,
+                  zIndex: 99,
+                }),
+              }}
+            />
+          </div>
+
+          <div className="flex flex-row ml-[2vw]">
+            <Creatable
+              onChange={(data) => {
+                if (data!.label === "Hepsi") {
+                  setFilterInstructor(null);
+                } else {
+                  setFilterInstructor(data!.label as any);
+                }
+              }}
+              value={{
+                label: filterInstructor === null ? "Hoca" : filterInstructor,
+              }}
+              placeholder={"Hoca"}
+              options={instructors}
+              styles={{
+                menu: (styles) => ({
+                  ...styles,
+                  zIndex: 99,
+                }),
+              }}
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setFilterRoom(null);
+              setFilterInstructor(null);
+
+              setFilterEvents(null);
             }}
-            value={{ label: filterRoom === null ? "Yer" : filterRoom }}
-            placeholder={"Yer"}
-            options={rooms}
-            styles={{
-              menu: (styles) => ({
-                ...styles,
-                zIndex: 99,
-              }),
-            }}
-          />
+            className="w-[40px] h-[40px] flex ml-[2vw] items-center justify-center rounded-[20px] bg-[#c00000]"
+          >
+            <IoMdClose size={25} color="white" />
+          </button>
         </div>
 
-        <div className="flex flex-row ml-[2vw]">
-          <Creatable
-            onChange={(data) => {
-              if (data!.label === "Hepsi") {
-                setFilterInstructor(null);
-              } else {
-                setFilterInstructor(data!.label as any);
-              }
-            }}
-            value={{
-              label: filterInstructor === null ? "Hoca" : filterInstructor,
-            }}
-            placeholder={"Hoca"}
-            options={instructors}
-            styles={{
-              menu: (styles) => ({
-                ...styles,
-                zIndex: 99,
-              }),
-            }}
-          />
-        </div>
-
-        <button
-          onClick={() => {
-            setFilterRoom(null);
-            setFilterInstructor(null);
-
-            setFilterEvents(null);
+        <Calendar
+          className="w-[95vw] h-[76vh] mt-[2vh] ml-[2.5vw]"
+          messages={{
+            date: "Tarih",
+            time: "Zaman",
+            event: "Ders",
+            allDay: "Tüm Gün",
+            week: "Hafta",
+            work_week: "İş Günü",
+            day: "Gün",
+            month: "Ay",
+            previous: "Geri",
+            next: "İleri",
+            yesterday: "Dün",
+            tomorrow: "Yarın",
+            today: "Bugün",
+            agenda: "Ajanda",
+            showMore: (count) => "+" + count + " etkinlik",
+            noEventsInRange: "Bu aralıkta dolu gün bulunamadı.",
           }}
-          className="w-[40px] h-[40px] flex ml-[2vw] items-center justify-center rounded-[20px] bg-[#c00000]"
-        >
-          <IoMdClose size={25} color="white" />
-        </button>
-      </div>
+          events={filterEvents !== null ? filterEvents : events}
+          selectable={true}
+          startAccessor="start"
+          localizer={localizer}
+          onSelectSlot={() => {
+            setModalVisible(true);
+          }}
+          style={{ height: "76vh" }}
+          onSelectEvent={onSelectEvent}
+          eventPropGetter={(event) => {
+            const roomType = event.room[0];
 
-      <Calendar
-        className="w-[95vw] h-[76vh] mt-[2vh] ml-[2.5vw]"
-        messages={{
-          date: "Tarih",
-          time: "Zaman",
-          event: "Ders",
-          allDay: "Tüm Gün",
-          week: "Hafta",
-          work_week: "İş Günü",
-          day: "Gün",
-          month: "Ay",
-          previous: "Geri",
-          next: "İleri",
-          yesterday: "Dün",
-          tomorrow: "Yarın",
-          today: "Bugün",
-          agenda: "Ajanda",
-          showMore: (count) => "+" + count + " etkinlik",
-          noEventsInRange: "Bu aralıkta dolu gün bulunamadı.",
-        }}
-        events={filterEvents !== null ? filterEvents : events}
-        selectable={true}
-        startAccessor="start"
-        localizer={localizer}
-        onSelectSlot={() => {
-          setModalVisible(true);
-        }}
-        style={{ height: "76vh" }}
-        onSelectEvent={onSelectEvent}
-        eventPropGetter={(event) => {
-          const roomType = event.room[0];
+            let newStyle;
 
-          let newStyle;
-
-          if (event.is_main) {
-            if (roomType === "D") {
+            if (event.is_main) {
+              if (roomType === "D") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.class1,
+                };
+              } else if (roomType === "E") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.class2,
+                };
+              } else if (roomType === "A") {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.class3,
+                };
+              } else {
+                newStyle = {
+                  color: "black",
+                  fontWeight: "bold",
+                  backgroundColor: colors.class0,
+                };
+              }
+            } else if (roomType === "D") {
               newStyle = {
                 color: "black",
                 fontWeight: "bold",
@@ -404,313 +433,320 @@ export default function Room() {
                 backgroundColor: colors.class0,
               };
             }
-          } else if (roomType === "D") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class1,
+
+            return {
+              className: "",
+              style: newStyle,
             };
-          } else if (roomType === "E") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class2,
-            };
-          } else if (roomType === "A") {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class3,
-            };
-          } else {
-            newStyle = {
-              color: "black",
-              fontWeight: "bold",
-              backgroundColor: colors.class0,
-            };
-          }
+          }}
+          components={{
+            day: ({ date, localizer }: { date: any; localizer: any }) =>
+              localizer.format(date, "dddd"),
+          }}
+        />
 
-          return {
-            className: "",
-            style: newStyle,
-          };
-        }}
-        components={{
-          day: ({ date, localizer }: { date: any; localizer: any }) =>
-            localizer.format(date, "dddd"),
-        }}
-      />
+        <ReactModal
+          style={{
+            overlay: {
+              zIndex: 99,
+              backgroundColor: "rgba(0, 0, 0, 0)",
+            },
+            content: {
+              top: "10vh",
+              left: "30vw",
+              width: "40vw",
+              height: "80vh",
+              backgroundColor: "white",
+            },
+          }}
+          ariaHideApp={false}
+          isOpen={deleteEventModalVisible}
+        >
+          <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
+            <h2>Toplantı Düzenle</h2>
 
-      <ReactModal
-        style={{
-          overlay: {
-            zIndex: 99,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-          },
-          content: {
-            top: "10vh",
-            left: "30vw",
-            width: "40vw",
-            height: "80vh",
-            backgroundColor: "white",
-          },
-        }}
-        ariaHideApp={false}
-        isOpen={deleteEventModalVisible}
-      >
-        <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
-          <h2>Toplantı Düzenle</h2>
-
-          <button
-            className="text-2xl bg-white"
-            onClick={() => setDeleteEventModalVisible(false)}
-          >
-            <IoMdClose />
-          </button>
-        </div>
-
-        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
-          <Creatable
-            onChange={(data: any) =>
-              setUpdateRoom(data.label.split("|")[0].trim())
-            }
-            placeholder={"Yer"}
-            options={roomsExtra}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setUpdateInstructor(data.label)}
-            placeholder={"Hoca"}
-            options={instructors}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setUpdateRecurrence(data.value)}
-            placeholder={"Tekrar sıklığı"}
-            options={[
-              { value: "o", label: "Tek sefer" },
-              { value: "d", label: "Her gün" },
-              { value: "w", label: "Her hafta" },
-              { value: "m", label: "Her ay" },
-            ]}
-          />
-
-          <div className="h-[5%]" />
-
-          <input
-            className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
-            onChange={(data) => setUpdateDescription(data.target.value)}
-            placeholder={"Açıklama"}
-          />
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <DatePicker
-              id="class-create-modal-content-date-container"
-              selected={updateStartDate}
-              onChange={(date: any) => setUpdateStartDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-
-            <DatePicker
-              id="class-create-modal-content-date-container"
-              selected={updateEndDate}
-              onChange={(date: any) => setUpdateEndDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
+            <button
+              className="text-2xl bg-white"
+              onClick={() => setDeleteEventModalVisible(false)}
+            >
+              <IoMdClose />
+            </button>
           </div>
 
-          <div className="h-[5%]" />
+          <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
+            <Creatable
+              onChange={(data: any) =>
+                setUpdateRoom(data.label.split("|")[0].trim())
+              }
+              placeholder={"Yer"}
+              options={roomsExtra}
+            />
 
-          <div className="flex flex-row justify-around">
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setUpdateStartTime(data.value);
-                }}
-                placeholder={"Başlangıç Saati"}
-                options={[
-                  { value: "8:00:00", label: "8:00" },
-                  { value: "8:15:00", label: "8:15" },
-                  { value: "8:30:00", label: "8:30" },
-                  { value: "8:45:00", label: "8:45" },
-                  { value: "9:00:00", label: "9:00" },
-                  { value: "9:15:00", label: "9:15" },
-                  { value: "9:30:00", label: "9:30" },
-                  { value: "9:45:00", label: "9:45" },
-                  { value: "10:00:00", label: "10:00" },
-                  { value: "10:15:00", label: "10:15" },
-                  { value: "10:30:00", label: "10:30" },
-                  { value: "10:45:00", label: "10:45" },
-                  { value: "11:00:00", label: "11:00" },
-                  { value: "11:15:00", label: "11:15" },
-                  { value: "11:30:00", label: "11:30" },
-                  { value: "11:45:00", label: "11:45" },
-                  { value: "12:00:00", label: "12:00" },
-                  { value: "12:15:00", label: "12:15" },
-                  { value: "12:00:00", label: "12:30" },
-                  { value: "12:45:00", label: "12:45" },
-                  { value: "13:00:00", label: "13:00" },
-                  { value: "13:15:00", label: "13:15" },
-                  { value: "13:30:00", label: "13:30" },
-                  { value: "13:45:00", label: "13:45" },
-                  { value: "14:00:00", label: "14:00" },
-                  { value: "14:15:00", label: "14:15" },
-                  { value: "14:30:00", label: "14:30" },
-                  { value: "14:45:00", label: "14:45" },
-                  { value: "15:00:00", label: "15:00" },
-                  { value: "15:15:00", label: "15:15" },
-                  { value: "15:30:00", label: "15:30" },
-                  { value: "15:45:00", label: "15:45" },
-                  { value: "16:00:00", label: "16:00" },
-                  { value: "16:15:00", label: "16:15" },
-                  { value: "16:30:00", label: "16:30" },
-                  { value: "16:45:00", label: "16:45" },
-                  { value: "17:00:00", label: "17:00" },
-                  { value: "17:15:00", label: "17:15" },
-                  { value: "17:30:00", label: "17:30" },
-                  { value: "17:45:00", label: "17:45" },
-                  { value: "18:00:00", label: "18:00" },
-                  { value: "18:15:00", label: "18:15" },
-                  { value: "18:30:00", label: "18:30" },
-                  { value: "18:45:00", label: "18:45" },
-                  { value: "19:00:00", label: "19:00" },
-                  { value: "19:15:00", label: "19:15" },
-                  { value: "19:30:00", label: "19:30" },
-                  { value: "19:45:00", label: "19:45" },
-                  { value: "20:00:00", label: "20:00" },
-                  { value: "20:15:00", label: "20:15" },
-                  { value: "20:30:00", label: "20:30" },
-                  { value: "20:45:00", label: "20:45" },
-                  { value: "21:00:00", label: "21:00" },
-                  { value: "21:15:00", label: "21:15" },
-                  { value: "21:30:00", label: "21:30" },
-                  { value: "21:45:00", label: "21:45" },
-                  { value: "22:00:00", label: "22:00" },
-                  { value: "22:15:00", label: "22:15" },
-                  { value: "22:30:00", label: "22:30" },
-                  { value: "22:45:00", label: "22:45" },
-                  { value: "23:00:00", label: "23:00" },
-                  { value: "23:15:00", label: "23:15" },
-                  { value: "23:30:00", label: "23:30" },
-                  { value: "23:45:00", label: "23:45" },
-                ]}
-              />
-            </div>
+            <div className="h-[5%]" />
 
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setUpdateEndTime(data.value);
-                }}
-                placeholder={"Bitiş Saati"}
-                options={[
-                  { value: "8:00:00", label: "8:00" },
-                  { value: "8:15:00", label: "8:15" },
-                  { value: "8:30:00", label: "8:30" },
-                  { value: "8:45:00", label: "8:45" },
-                  { value: "9:00:00", label: "9:00" },
-                  { value: "9:15:00", label: "9:15" },
-                  { value: "9:30:00", label: "9:30" },
-                  { value: "9:45:00", label: "9:45" },
-                  { value: "10:00:00", label: "10:00" },
-                  { value: "10:15:00", label: "10:15" },
-                  { value: "10:30:00", label: "10:30" },
-                  { value: "10:45:00", label: "10:45" },
-                  { value: "11:00:00", label: "11:00" },
-                  { value: "11:15:00", label: "11:15" },
-                  { value: "11:30:00", label: "11:30" },
-                  { value: "11:45:00", label: "11:45" },
-                  { value: "12:00:00", label: "12:00" },
-                  { value: "12:15:00", label: "12:15" },
-                  { value: "12:00:00", label: "12:30" },
-                  { value: "12:45:00", label: "12:45" },
-                  { value: "13:00:00", label: "13:00" },
-                  { value: "13:15:00", label: "13:15" },
-                  { value: "13:30:00", label: "13:30" },
-                  { value: "13:45:00", label: "13:45" },
-                  { value: "14:00:00", label: "14:00" },
-                  { value: "14:15:00", label: "14:15" },
-                  { value: "14:30:00", label: "14:30" },
-                  { value: "14:45:00", label: "14:45" },
-                  { value: "15:00:00", label: "15:00" },
-                  { value: "15:15:00", label: "15:15" },
-                  { value: "15:30:00", label: "15:30" },
-                  { value: "15:45:00", label: "15:45" },
-                  { value: "16:00:00", label: "16:00" },
-                  { value: "16:15:00", label: "16:15" },
-                  { value: "16:30:00", label: "16:30" },
-                  { value: "16:45:00", label: "16:45" },
-                  { value: "17:00:00", label: "17:00" },
-                  { value: "17:15:00", label: "17:15" },
-                  { value: "17:30:00", label: "17:30" },
-                  { value: "17:45:00", label: "17:45" },
-                  { value: "18:00:00", label: "18:00" },
-                  { value: "18:15:00", label: "18:15" },
-                  { value: "18:30:00", label: "18:30" },
-                  { value: "18:45:00", label: "18:45" },
-                  { value: "19:00:00", label: "19:00" },
-                  { value: "19:15:00", label: "19:15" },
-                  { value: "19:30:00", label: "19:30" },
-                  { value: "19:45:00", label: "19:45" },
-                  { value: "20:00:00", label: "20:00" },
-                  { value: "20:15:00", label: "20:15" },
-                  { value: "20:30:00", label: "20:30" },
-                  { value: "20:45:00", label: "20:45" },
-                  { value: "21:00:00", label: "21:00" },
-                  { value: "21:15:00", label: "21:15" },
-                  { value: "21:30:00", label: "21:30" },
-                  { value: "21:45:00", label: "21:45" },
-                  { value: "22:00:00", label: "22:00" },
-                  { value: "22:15:00", label: "22:15" },
-                  { value: "22:30:00", label: "22:30" },
-                  { value: "22:45:00", label: "22:45" },
-                  { value: "23:00:00", label: "23:00" },
-                  { value: "23:15:00", label: "23:15" },
-                  { value: "23:30:00", label: "23:30" },
-                  { value: "23:45:00", label: "23:45" },
-                ]}
-              />
-            </div>
-          </div>
+            <Creatable
+              onChange={(data: any) => setUpdateInstructor(data.label)}
+              placeholder={"Hoca"}
+              options={instructors}
+            />
 
-          <div className="h-[5%]" />
+            <div className="h-[5%]" />
 
-          <label className="flex items-center">
+            <Creatable
+              onChange={(data: any) => setUpdateRecurrence(data.value)}
+              placeholder={"Tekrar sıklığı"}
+              options={[
+                { value: "o", label: "Tek sefer" },
+                { value: "d", label: "Her gün" },
+                { value: "w", label: "Her hafta" },
+                { value: "m", label: "Her ay" },
+              ]}
+            />
+
+            <div className="h-[5%]" />
+
             <input
-              className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
-              type="checkbox"
-              checked={updateIsMain}
-              onChange={() => {
-                setUpdateIsMain(!updateIsMain);
-              }}
+              className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
+              onChange={(data) => setUpdateDescription(data.target.value)}
+              placeholder={"Açıklama"}
             />
-            &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
-            işaretleyin.
-          </label>
 
-          <button
-            onClick={async () => {
-              if (
-                updateInstructor !== null &&
-                updateStartDate !== null &&
-                updateEndDate !== null &&
-                updateStartTime !== null &&
-                updateEndTime !== null &&
-                updateRecurrence !== null &&
-                updateRoom !== null
-              ) {
-                if (recurrence === "o") {
-                  if (
-                    startDate.getDate() !== undefined &&
-                    endDate.getDate() !== undefined &&
-                    startDate.getDate() === endDate.getDate()
-                  ) {
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <DatePicker
+                id="class-create-modal-content-date-container"
+                selected={updateStartDate}
+                onChange={(date: any) => setUpdateStartDate(date)}
+                dateFormat={"dd/MM/yyyy"}
+              />
+
+              <DatePicker
+                id="class-create-modal-content-date-container"
+                selected={updateEndDate}
+                onChange={(date: any) => setUpdateEndDate(date)}
+                dateFormat={"dd/MM/yyyy"}
+              />
+            </div>
+
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <div style={{ width: 250 }}>
+                <Creatable
+                  onChange={(data: any) => {
+                    setUpdateStartTime(data.value);
+                  }}
+                  placeholder={"Başlangıç Saati"}
+                  options={[
+                    { value: "8:00:00", label: "8:00" },
+                    { value: "8:15:00", label: "8:15" },
+                    { value: "8:30:00", label: "8:30" },
+                    { value: "8:45:00", label: "8:45" },
+                    { value: "9:00:00", label: "9:00" },
+                    { value: "9:15:00", label: "9:15" },
+                    { value: "9:30:00", label: "9:30" },
+                    { value: "9:45:00", label: "9:45" },
+                    { value: "10:00:00", label: "10:00" },
+                    { value: "10:15:00", label: "10:15" },
+                    { value: "10:30:00", label: "10:30" },
+                    { value: "10:45:00", label: "10:45" },
+                    { value: "11:00:00", label: "11:00" },
+                    { value: "11:15:00", label: "11:15" },
+                    { value: "11:30:00", label: "11:30" },
+                    { value: "11:45:00", label: "11:45" },
+                    { value: "12:00:00", label: "12:00" },
+                    { value: "12:15:00", label: "12:15" },
+                    { value: "12:00:00", label: "12:30" },
+                    { value: "12:45:00", label: "12:45" },
+                    { value: "13:00:00", label: "13:00" },
+                    { value: "13:15:00", label: "13:15" },
+                    { value: "13:30:00", label: "13:30" },
+                    { value: "13:45:00", label: "13:45" },
+                    { value: "14:00:00", label: "14:00" },
+                    { value: "14:15:00", label: "14:15" },
+                    { value: "14:30:00", label: "14:30" },
+                    { value: "14:45:00", label: "14:45" },
+                    { value: "15:00:00", label: "15:00" },
+                    { value: "15:15:00", label: "15:15" },
+                    { value: "15:30:00", label: "15:30" },
+                    { value: "15:45:00", label: "15:45" },
+                    { value: "16:00:00", label: "16:00" },
+                    { value: "16:15:00", label: "16:15" },
+                    { value: "16:30:00", label: "16:30" },
+                    { value: "16:45:00", label: "16:45" },
+                    { value: "17:00:00", label: "17:00" },
+                    { value: "17:15:00", label: "17:15" },
+                    { value: "17:30:00", label: "17:30" },
+                    { value: "17:45:00", label: "17:45" },
+                    { value: "18:00:00", label: "18:00" },
+                    { value: "18:15:00", label: "18:15" },
+                    { value: "18:30:00", label: "18:30" },
+                    { value: "18:45:00", label: "18:45" },
+                    { value: "19:00:00", label: "19:00" },
+                    { value: "19:15:00", label: "19:15" },
+                    { value: "19:30:00", label: "19:30" },
+                    { value: "19:45:00", label: "19:45" },
+                    { value: "20:00:00", label: "20:00" },
+                    { value: "20:15:00", label: "20:15" },
+                    { value: "20:30:00", label: "20:30" },
+                    { value: "20:45:00", label: "20:45" },
+                    { value: "21:00:00", label: "21:00" },
+                    { value: "21:15:00", label: "21:15" },
+                    { value: "21:30:00", label: "21:30" },
+                    { value: "21:45:00", label: "21:45" },
+                    { value: "22:00:00", label: "22:00" },
+                    { value: "22:15:00", label: "22:15" },
+                    { value: "22:30:00", label: "22:30" },
+                    { value: "22:45:00", label: "22:45" },
+                    { value: "23:00:00", label: "23:00" },
+                    { value: "23:15:00", label: "23:15" },
+                    { value: "23:30:00", label: "23:30" },
+                    { value: "23:45:00", label: "23:45" },
+                  ]}
+                />
+              </div>
+
+              <div style={{ width: 250 }}>
+                <Creatable
+                  onChange={(data: any) => {
+                    setUpdateEndTime(data.value);
+                  }}
+                  placeholder={"Bitiş Saati"}
+                  options={[
+                    { value: "8:00:00", label: "8:00" },
+                    { value: "8:15:00", label: "8:15" },
+                    { value: "8:30:00", label: "8:30" },
+                    { value: "8:45:00", label: "8:45" },
+                    { value: "9:00:00", label: "9:00" },
+                    { value: "9:15:00", label: "9:15" },
+                    { value: "9:30:00", label: "9:30" },
+                    { value: "9:45:00", label: "9:45" },
+                    { value: "10:00:00", label: "10:00" },
+                    { value: "10:15:00", label: "10:15" },
+                    { value: "10:30:00", label: "10:30" },
+                    { value: "10:45:00", label: "10:45" },
+                    { value: "11:00:00", label: "11:00" },
+                    { value: "11:15:00", label: "11:15" },
+                    { value: "11:30:00", label: "11:30" },
+                    { value: "11:45:00", label: "11:45" },
+                    { value: "12:00:00", label: "12:00" },
+                    { value: "12:15:00", label: "12:15" },
+                    { value: "12:00:00", label: "12:30" },
+                    { value: "12:45:00", label: "12:45" },
+                    { value: "13:00:00", label: "13:00" },
+                    { value: "13:15:00", label: "13:15" },
+                    { value: "13:30:00", label: "13:30" },
+                    { value: "13:45:00", label: "13:45" },
+                    { value: "14:00:00", label: "14:00" },
+                    { value: "14:15:00", label: "14:15" },
+                    { value: "14:30:00", label: "14:30" },
+                    { value: "14:45:00", label: "14:45" },
+                    { value: "15:00:00", label: "15:00" },
+                    { value: "15:15:00", label: "15:15" },
+                    { value: "15:30:00", label: "15:30" },
+                    { value: "15:45:00", label: "15:45" },
+                    { value: "16:00:00", label: "16:00" },
+                    { value: "16:15:00", label: "16:15" },
+                    { value: "16:30:00", label: "16:30" },
+                    { value: "16:45:00", label: "16:45" },
+                    { value: "17:00:00", label: "17:00" },
+                    { value: "17:15:00", label: "17:15" },
+                    { value: "17:30:00", label: "17:30" },
+                    { value: "17:45:00", label: "17:45" },
+                    { value: "18:00:00", label: "18:00" },
+                    { value: "18:15:00", label: "18:15" },
+                    { value: "18:30:00", label: "18:30" },
+                    { value: "18:45:00", label: "18:45" },
+                    { value: "19:00:00", label: "19:00" },
+                    { value: "19:15:00", label: "19:15" },
+                    { value: "19:30:00", label: "19:30" },
+                    { value: "19:45:00", label: "19:45" },
+                    { value: "20:00:00", label: "20:00" },
+                    { value: "20:15:00", label: "20:15" },
+                    { value: "20:30:00", label: "20:30" },
+                    { value: "20:45:00", label: "20:45" },
+                    { value: "21:00:00", label: "21:00" },
+                    { value: "21:15:00", label: "21:15" },
+                    { value: "21:30:00", label: "21:30" },
+                    { value: "21:45:00", label: "21:45" },
+                    { value: "22:00:00", label: "22:00" },
+                    { value: "22:15:00", label: "22:15" },
+                    { value: "22:30:00", label: "22:30" },
+                    { value: "22:45:00", label: "22:45" },
+                    { value: "23:00:00", label: "23:00" },
+                    { value: "23:15:00", label: "23:15" },
+                    { value: "23:30:00", label: "23:30" },
+                    { value: "23:45:00", label: "23:45" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="h-[5%]" />
+
+            <label className="flex items-center">
+              <input
+                className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
+                type="checkbox"
+                checked={updateIsMain}
+                onChange={() => {
+                  setUpdateIsMain(!updateIsMain);
+                }}
+              />
+              &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
+              işaretleyin.
+            </label>
+
+            <button
+              onClick={async () => {
+                if (
+                  updateInstructor !== null &&
+                  updateStartDate !== null &&
+                  updateEndDate !== null &&
+                  updateStartTime !== null &&
+                  updateEndTime !== null &&
+                  updateRecurrence !== null &&
+                  updateRoom !== null
+                ) {
+                  if (recurrence === "o") {
+                    if (
+                      startDate.getDate() !== undefined &&
+                      endDate.getDate() !== undefined &&
+                      startDate.getDate() === endDate.getDate()
+                    ) {
+                      await API.updateMeetingEvent(
+                        eventDeleteID,
+                        updateDescription,
+                        updateInstructor,
+                        updateStartDate,
+                        updateEndDate,
+                        updateStartTime,
+                        updateEndTime,
+                        updateRecurrence,
+                        updateRoom,
+                        updateIsMain
+                      );
+
+                      handleMeetingEvents();
+
+                      setDeleteEventModalVisible(false);
+                    } else {
+                      toast.error(
+                        "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                        {
+                          theme: "light",
+                          autoClose: 3000,
+                          draggable: true,
+                          closeOnClick: true,
+                          pauseOnHover: true,
+                          progress: undefined,
+                          hideProgressBar: false,
+                          position: "bottom-center",
+                        }
+                      );
+                    }
+                  } else {
                     await API.updateMeetingEvent(
                       eventDeleteID,
                       updateDescription,
@@ -727,342 +763,341 @@ export default function Room() {
                     handleMeetingEvents();
 
                     setDeleteEventModalVisible(false);
-                  } else {
-                    toast.error(
-                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
-                      {
-                        theme: "light",
-                        autoClose: 3000,
-                        draggable: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        progress: undefined,
-                        hideProgressBar: false,
-                        position: "bottom-center",
-                      }
-                    );
                   }
-                } else {
-                  await API.updateMeetingEvent(
-                    eventDeleteID,
-                    updateDescription,
-                    updateInstructor,
-                    updateStartDate,
-                    updateEndDate,
-                    updateStartTime,
-                    updateEndTime,
-                    updateRecurrence,
-                    updateRoom,
-                    updateIsMain
-                  );
-
-                  handleMeetingEvents();
-
-                  setDeleteEventModalVisible(false);
                 }
-              }
-            }}
-            className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-          >
-            <FaRegSave size={25} />
-          </button>
-
-          <button
-            className="w-[30%] bottom-[40px] right-[425px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
-            onClick={async () => {
-              await API.deleteMeetingEvent(eventDeleteID, eventDeleteDate);
-
-              handleMeetingEvents();
-
-              setDeleteEventModalVisible(false);
-            }}
-          >
-            Sadece Bunu Sil
-          </button>
-
-          <button
-            className="w-[30%] bottom-[40px] right-[150px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
-            onClick={async () => {
-              await API.deleteMeetingEvents(eventDeleteID);
-
-              handleMeetingEvents();
-
-              setDeleteEventModalVisible(false);
-            }}
-          >
-            Hepsini Sil
-          </button>
-        </div>
-      </ReactModal>
-
-      <ReactModal
-        style={{
-          overlay: {
-            zIndex: 99,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-          },
-          content: {
-            top: "10vh",
-            left: "30vw",
-            width: "40vw",
-            height: "80vh",
-            backgroundColor: "white",
-          },
-        }}
-        ariaHideApp={false}
-        isOpen={modalVisible}
-      >
-        <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
-          <h2>Toplantı Ekle</h2>
-
-          <button
-            className="text-2xl bg-white"
-            onClick={() => setModalVisible(false)}
-          >
-            <IoMdClose />
-          </button>
-        </div>
-
-        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
-          <Creatable
-            onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
-            placeholder={"Yer"}
-            options={roomsExtra}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setInstructor(data.label)}
-            placeholder={"Hoca"}
-            options={instructors}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setRecurrence(data.value)}
-            placeholder={"Tekrar sıklığı"}
-            options={[
-              { value: "o", label: "Tek sefer" },
-              { value: "d", label: "Her gün" },
-              { value: "w", label: "Her hafta" },
-              { value: "m", label: "Her ay" },
-            ]}
-          />
-
-          <div className="h-[5%]" />
-
-          <input
-            className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
-            onChange={(data) => setDescription(data.target.value)}
-            placeholder={"Açıklama"}
-          />
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <DatePicker
-              id="class-create-modal-content-date-container"
-              selected={startDate}
-              onChange={(date: any) => setStartDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-
-            <DatePicker
-              id="class-create-modal-content-date-container"
-              selected={endDate}
-              onChange={(date: any) => setEndDate(date)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-          </div>
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setStartTime(data.value);
-                }}
-                placeholder={"Başlangıç Saati"}
-                options={[
-                  { value: "8:00:00", label: "8:00" },
-                  { value: "8:15:00", label: "8:15" },
-                  { value: "8:30:00", label: "8:30" },
-                  { value: "8:45:00", label: "8:45" },
-                  { value: "9:00:00", label: "9:00" },
-                  { value: "9:15:00", label: "9:15" },
-                  { value: "9:30:00", label: "9:30" },
-                  { value: "9:45:00", label: "9:45" },
-                  { value: "10:00:00", label: "10:00" },
-                  { value: "10:15:00", label: "10:15" },
-                  { value: "10:30:00", label: "10:30" },
-                  { value: "10:45:00", label: "10:45" },
-                  { value: "11:00:00", label: "11:00" },
-                  { value: "11:15:00", label: "11:15" },
-                  { value: "11:30:00", label: "11:30" },
-                  { value: "11:45:00", label: "11:45" },
-                  { value: "12:00:00", label: "12:00" },
-                  { value: "12:15:00", label: "12:15" },
-                  { value: "12:00:00", label: "12:30" },
-                  { value: "12:45:00", label: "12:45" },
-                  { value: "13:00:00", label: "13:00" },
-                  { value: "13:15:00", label: "13:15" },
-                  { value: "13:30:00", label: "13:30" },
-                  { value: "13:45:00", label: "13:45" },
-                  { value: "14:00:00", label: "14:00" },
-                  { value: "14:15:00", label: "14:15" },
-                  { value: "14:30:00", label: "14:30" },
-                  { value: "14:45:00", label: "14:45" },
-                  { value: "15:00:00", label: "15:00" },
-                  { value: "15:15:00", label: "15:15" },
-                  { value: "15:30:00", label: "15:30" },
-                  { value: "15:45:00", label: "15:45" },
-                  { value: "16:00:00", label: "16:00" },
-                  { value: "16:15:00", label: "16:15" },
-                  { value: "16:30:00", label: "16:30" },
-                  { value: "16:45:00", label: "16:45" },
-                  { value: "17:00:00", label: "17:00" },
-                  { value: "17:15:00", label: "17:15" },
-                  { value: "17:30:00", label: "17:30" },
-                  { value: "17:45:00", label: "17:45" },
-                  { value: "18:00:00", label: "18:00" },
-                  { value: "18:15:00", label: "18:15" },
-                  { value: "18:30:00", label: "18:30" },
-                  { value: "18:45:00", label: "18:45" },
-                  { value: "19:00:00", label: "19:00" },
-                  { value: "19:15:00", label: "19:15" },
-                  { value: "19:30:00", label: "19:30" },
-                  { value: "19:45:00", label: "19:45" },
-                  { value: "20:00:00", label: "20:00" },
-                  { value: "20:15:00", label: "20:15" },
-                  { value: "20:30:00", label: "20:30" },
-                  { value: "20:45:00", label: "20:45" },
-                  { value: "21:00:00", label: "21:00" },
-                  { value: "21:15:00", label: "21:15" },
-                  { value: "21:30:00", label: "21:30" },
-                  { value: "21:45:00", label: "21:45" },
-                  { value: "22:00:00", label: "22:00" },
-                  { value: "22:15:00", label: "22:15" },
-                  { value: "22:30:00", label: "22:30" },
-                  { value: "22:45:00", label: "22:45" },
-                  { value: "23:00:00", label: "23:00" },
-                  { value: "23:15:00", label: "23:15" },
-                  { value: "23:30:00", label: "23:30" },
-                  { value: "23:45:00", label: "23:45" },
-                ]}
-              />
-            </div>
-
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setEndTime(data.value);
-                }}
-                placeholder={"Bitiş Saati"}
-                options={[
-                  { value: "8:00:00", label: "8:00" },
-                  { value: "8:15:00", label: "8:15" },
-                  { value: "8:30:00", label: "8:30" },
-                  { value: "8:45:00", label: "8:45" },
-                  { value: "9:00:00", label: "9:00" },
-                  { value: "9:15:00", label: "9:15" },
-                  { value: "9:30:00", label: "9:30" },
-                  { value: "9:45:00", label: "9:45" },
-                  { value: "10:00:00", label: "10:00" },
-                  { value: "10:15:00", label: "10:15" },
-                  { value: "10:30:00", label: "10:30" },
-                  { value: "10:45:00", label: "10:45" },
-                  { value: "11:00:00", label: "11:00" },
-                  { value: "11:15:00", label: "11:15" },
-                  { value: "11:30:00", label: "11:30" },
-                  { value: "11:45:00", label: "11:45" },
-                  { value: "12:00:00", label: "12:00" },
-                  { value: "12:15:00", label: "12:15" },
-                  { value: "12:00:00", label: "12:30" },
-                  { value: "12:45:00", label: "12:45" },
-                  { value: "13:00:00", label: "13:00" },
-                  { value: "13:15:00", label: "13:15" },
-                  { value: "13:30:00", label: "13:30" },
-                  { value: "13:45:00", label: "13:45" },
-                  { value: "14:00:00", label: "14:00" },
-                  { value: "14:15:00", label: "14:15" },
-                  { value: "14:30:00", label: "14:30" },
-                  { value: "14:45:00", label: "14:45" },
-                  { value: "15:00:00", label: "15:00" },
-                  { value: "15:15:00", label: "15:15" },
-                  { value: "15:30:00", label: "15:30" },
-                  { value: "15:45:00", label: "15:45" },
-                  { value: "16:00:00", label: "16:00" },
-                  { value: "16:15:00", label: "16:15" },
-                  { value: "16:30:00", label: "16:30" },
-                  { value: "16:45:00", label: "16:45" },
-                  { value: "17:00:00", label: "17:00" },
-                  { value: "17:15:00", label: "17:15" },
-                  { value: "17:30:00", label: "17:30" },
-                  { value: "17:45:00", label: "17:45" },
-                  { value: "18:00:00", label: "18:00" },
-                  { value: "18:15:00", label: "18:15" },
-                  { value: "18:30:00", label: "18:30" },
-                  { value: "18:45:00", label: "18:45" },
-                  { value: "19:00:00", label: "19:00" },
-                  { value: "19:15:00", label: "19:15" },
-                  { value: "19:30:00", label: "19:30" },
-                  { value: "19:45:00", label: "19:45" },
-                  { value: "20:00:00", label: "20:00" },
-                  { value: "20:15:00", label: "20:15" },
-                  { value: "20:30:00", label: "20:30" },
-                  { value: "20:45:00", label: "20:45" },
-                  { value: "21:00:00", label: "21:00" },
-                  { value: "21:15:00", label: "21:15" },
-                  { value: "21:30:00", label: "21:30" },
-                  { value: "21:45:00", label: "21:45" },
-                  { value: "22:00:00", label: "22:00" },
-                  { value: "22:15:00", label: "22:15" },
-                  { value: "22:30:00", label: "22:30" },
-                  { value: "22:45:00", label: "22:45" },
-                  { value: "23:00:00", label: "23:00" },
-                  { value: "23:15:00", label: "23:15" },
-                  { value: "23:30:00", label: "23:30" },
-                  { value: "23:45:00", label: "23:45" },
-                ]}
-              />
-            </div>
-          </div>
-
-          <div className="h-[5%]" />
-
-          <label className="flex items-center">
-            <input
-              className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
-              type="checkbox"
-              checked={isMain}
-              onChange={() => {
-                setIsMain(!isMain);
               }}
-            />
-            &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
-            işaretleyin.
-          </label>
+              className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
+            >
+              <FaRegSave size={25} />
+            </button>
 
-          <button
-            onClick={async () => {
-              if (
-                instructor !== null &&
-                startDate !== null &&
-                endDate !== null &&
-                startTime !== null &&
-                endTime !== null &&
-                recurrence !== null &&
-                room !== null
-              ) {
-                if (recurrence === "o") {
-                  if (
-                    startDate.getDate() !== undefined &&
-                    endDate.getDate() !== undefined &&
-                    startDate.getDate() === endDate.getDate()
-                  ) {
+            <button
+              className="w-[30%] bottom-[40px] right-[425px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
+              onClick={async () => {
+                await API.deleteMeetingEvent(eventDeleteID, eventDeleteDate);
+
+                handleMeetingEvents();
+
+                setDeleteEventModalVisible(false);
+              }}
+            >
+              Sadece Bunu Sil
+            </button>
+
+            <button
+              className="w-[30%] bottom-[40px] right-[150px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
+              onClick={async () => {
+                await API.deleteMeetingEvents(eventDeleteID);
+
+                handleMeetingEvents();
+
+                setDeleteEventModalVisible(false);
+              }}
+            >
+              Hepsini Sil
+            </button>
+          </div>
+        </ReactModal>
+
+        <ReactModal
+          style={{
+            overlay: {
+              zIndex: 99,
+              backgroundColor: "rgba(0, 0, 0, 0)",
+            },
+            content: {
+              top: "10vh",
+              left: "30vw",
+              width: "40vw",
+              height: "80vh",
+              backgroundColor: "white",
+            },
+          }}
+          ariaHideApp={false}
+          isOpen={modalVisible}
+        >
+          <div className="flex pl-[5%] pr-[5%] flex-row justify-between">
+            <h2>Toplantı Ekle</h2>
+
+            <button
+              className="text-2xl bg-white"
+              onClick={() => setModalVisible(false)}
+            >
+              <IoMdClose />
+            </button>
+          </div>
+
+          <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
+            <Creatable
+              onChange={(data: any) => setRoom(data.label.split("|")[0].trim())}
+              placeholder={"Yer"}
+              options={roomsExtra}
+            />
+
+            <div className="h-[5%]" />
+
+            <Creatable
+              onChange={(data: any) => setInstructor(data.label)}
+              placeholder={"Hoca"}
+              options={instructors}
+            />
+
+            <div className="h-[5%]" />
+
+            <Creatable
+              onChange={(data: any) => setRecurrence(data.value)}
+              placeholder={"Tekrar sıklığı"}
+              options={[
+                { value: "o", label: "Tek sefer" },
+                { value: "d", label: "Her gün" },
+                { value: "w", label: "Her hafta" },
+                { value: "m", label: "Her ay" },
+              ]}
+            />
+
+            <div className="h-[5%]" />
+
+            <input
+              className="w-[97%] h-[35px] text-[15px] pl-[2%] border-solid border-[1px] rounded-[5px] border-[#b8b8b8]"
+              onChange={(data) => setDescription(data.target.value)}
+              placeholder={"Açıklama"}
+            />
+
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <DatePicker
+                id="class-create-modal-content-date-container"
+                selected={startDate}
+                onChange={(date: any) => setStartDate(date)}
+                dateFormat={"dd/MM/yyyy"}
+              />
+
+              <DatePicker
+                id="class-create-modal-content-date-container"
+                selected={endDate}
+                onChange={(date: any) => setEndDate(date)}
+                dateFormat={"dd/MM/yyyy"}
+              />
+            </div>
+
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <div style={{ width: 250 }}>
+                <Creatable
+                  onChange={(data: any) => {
+                    setStartTime(data.value);
+                  }}
+                  placeholder={"Başlangıç Saati"}
+                  options={[
+                    { value: "8:00:00", label: "8:00" },
+                    { value: "8:15:00", label: "8:15" },
+                    { value: "8:30:00", label: "8:30" },
+                    { value: "8:45:00", label: "8:45" },
+                    { value: "9:00:00", label: "9:00" },
+                    { value: "9:15:00", label: "9:15" },
+                    { value: "9:30:00", label: "9:30" },
+                    { value: "9:45:00", label: "9:45" },
+                    { value: "10:00:00", label: "10:00" },
+                    { value: "10:15:00", label: "10:15" },
+                    { value: "10:30:00", label: "10:30" },
+                    { value: "10:45:00", label: "10:45" },
+                    { value: "11:00:00", label: "11:00" },
+                    { value: "11:15:00", label: "11:15" },
+                    { value: "11:30:00", label: "11:30" },
+                    { value: "11:45:00", label: "11:45" },
+                    { value: "12:00:00", label: "12:00" },
+                    { value: "12:15:00", label: "12:15" },
+                    { value: "12:00:00", label: "12:30" },
+                    { value: "12:45:00", label: "12:45" },
+                    { value: "13:00:00", label: "13:00" },
+                    { value: "13:15:00", label: "13:15" },
+                    { value: "13:30:00", label: "13:30" },
+                    { value: "13:45:00", label: "13:45" },
+                    { value: "14:00:00", label: "14:00" },
+                    { value: "14:15:00", label: "14:15" },
+                    { value: "14:30:00", label: "14:30" },
+                    { value: "14:45:00", label: "14:45" },
+                    { value: "15:00:00", label: "15:00" },
+                    { value: "15:15:00", label: "15:15" },
+                    { value: "15:30:00", label: "15:30" },
+                    { value: "15:45:00", label: "15:45" },
+                    { value: "16:00:00", label: "16:00" },
+                    { value: "16:15:00", label: "16:15" },
+                    { value: "16:30:00", label: "16:30" },
+                    { value: "16:45:00", label: "16:45" },
+                    { value: "17:00:00", label: "17:00" },
+                    { value: "17:15:00", label: "17:15" },
+                    { value: "17:30:00", label: "17:30" },
+                    { value: "17:45:00", label: "17:45" },
+                    { value: "18:00:00", label: "18:00" },
+                    { value: "18:15:00", label: "18:15" },
+                    { value: "18:30:00", label: "18:30" },
+                    { value: "18:45:00", label: "18:45" },
+                    { value: "19:00:00", label: "19:00" },
+                    { value: "19:15:00", label: "19:15" },
+                    { value: "19:30:00", label: "19:30" },
+                    { value: "19:45:00", label: "19:45" },
+                    { value: "20:00:00", label: "20:00" },
+                    { value: "20:15:00", label: "20:15" },
+                    { value: "20:30:00", label: "20:30" },
+                    { value: "20:45:00", label: "20:45" },
+                    { value: "21:00:00", label: "21:00" },
+                    { value: "21:15:00", label: "21:15" },
+                    { value: "21:30:00", label: "21:30" },
+                    { value: "21:45:00", label: "21:45" },
+                    { value: "22:00:00", label: "22:00" },
+                    { value: "22:15:00", label: "22:15" },
+                    { value: "22:30:00", label: "22:30" },
+                    { value: "22:45:00", label: "22:45" },
+                    { value: "23:00:00", label: "23:00" },
+                    { value: "23:15:00", label: "23:15" },
+                    { value: "23:30:00", label: "23:30" },
+                    { value: "23:45:00", label: "23:45" },
+                  ]}
+                />
+              </div>
+
+              <div style={{ width: 250 }}>
+                <Creatable
+                  onChange={(data: any) => {
+                    setEndTime(data.value);
+                  }}
+                  placeholder={"Bitiş Saati"}
+                  options={[
+                    { value: "8:00:00", label: "8:00" },
+                    { value: "8:15:00", label: "8:15" },
+                    { value: "8:30:00", label: "8:30" },
+                    { value: "8:45:00", label: "8:45" },
+                    { value: "9:00:00", label: "9:00" },
+                    { value: "9:15:00", label: "9:15" },
+                    { value: "9:30:00", label: "9:30" },
+                    { value: "9:45:00", label: "9:45" },
+                    { value: "10:00:00", label: "10:00" },
+                    { value: "10:15:00", label: "10:15" },
+                    { value: "10:30:00", label: "10:30" },
+                    { value: "10:45:00", label: "10:45" },
+                    { value: "11:00:00", label: "11:00" },
+                    { value: "11:15:00", label: "11:15" },
+                    { value: "11:30:00", label: "11:30" },
+                    { value: "11:45:00", label: "11:45" },
+                    { value: "12:00:00", label: "12:00" },
+                    { value: "12:15:00", label: "12:15" },
+                    { value: "12:00:00", label: "12:30" },
+                    { value: "12:45:00", label: "12:45" },
+                    { value: "13:00:00", label: "13:00" },
+                    { value: "13:15:00", label: "13:15" },
+                    { value: "13:30:00", label: "13:30" },
+                    { value: "13:45:00", label: "13:45" },
+                    { value: "14:00:00", label: "14:00" },
+                    { value: "14:15:00", label: "14:15" },
+                    { value: "14:30:00", label: "14:30" },
+                    { value: "14:45:00", label: "14:45" },
+                    { value: "15:00:00", label: "15:00" },
+                    { value: "15:15:00", label: "15:15" },
+                    { value: "15:30:00", label: "15:30" },
+                    { value: "15:45:00", label: "15:45" },
+                    { value: "16:00:00", label: "16:00" },
+                    { value: "16:15:00", label: "16:15" },
+                    { value: "16:30:00", label: "16:30" },
+                    { value: "16:45:00", label: "16:45" },
+                    { value: "17:00:00", label: "17:00" },
+                    { value: "17:15:00", label: "17:15" },
+                    { value: "17:30:00", label: "17:30" },
+                    { value: "17:45:00", label: "17:45" },
+                    { value: "18:00:00", label: "18:00" },
+                    { value: "18:15:00", label: "18:15" },
+                    { value: "18:30:00", label: "18:30" },
+                    { value: "18:45:00", label: "18:45" },
+                    { value: "19:00:00", label: "19:00" },
+                    { value: "19:15:00", label: "19:15" },
+                    { value: "19:30:00", label: "19:30" },
+                    { value: "19:45:00", label: "19:45" },
+                    { value: "20:00:00", label: "20:00" },
+                    { value: "20:15:00", label: "20:15" },
+                    { value: "20:30:00", label: "20:30" },
+                    { value: "20:45:00", label: "20:45" },
+                    { value: "21:00:00", label: "21:00" },
+                    { value: "21:15:00", label: "21:15" },
+                    { value: "21:30:00", label: "21:30" },
+                    { value: "21:45:00", label: "21:45" },
+                    { value: "22:00:00", label: "22:00" },
+                    { value: "22:15:00", label: "22:15" },
+                    { value: "22:30:00", label: "22:30" },
+                    { value: "22:45:00", label: "22:45" },
+                    { value: "23:00:00", label: "23:00" },
+                    { value: "23:15:00", label: "23:15" },
+                    { value: "23:30:00", label: "23:30" },
+                    { value: "23:45:00", label: "23:45" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="h-[5%]" />
+
+            <label className="flex items-center">
+              <input
+                className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
+                type="checkbox"
+                checked={isMain}
+                onChange={() => {
+                  setIsMain(!isMain);
+                }}
+              />
+              &nbsp;&nbsp;&nbsp;Bölüm başkanlığı toplantısı için bu kutucuğu
+              işaretleyin.
+            </label>
+
+            <button
+              onClick={async () => {
+                if (
+                  instructor !== null &&
+                  startDate !== null &&
+                  endDate !== null &&
+                  startTime !== null &&
+                  endTime !== null &&
+                  recurrence !== null &&
+                  room !== null
+                ) {
+                  if (recurrence === "o") {
+                    if (
+                      startDate.getDate() !== undefined &&
+                      endDate.getDate() !== undefined &&
+                      startDate.getDate() === endDate.getDate()
+                    ) {
+                      await API.createMeetingEvent(
+                        description,
+                        instructor,
+                        startDate,
+                        endDate,
+                        startTime,
+                        endTime,
+                        recurrence,
+                        room,
+                        isMain
+                      );
+
+                      handleMeetingEvents();
+
+                      setModalVisible(false);
+                    } else {
+                      toast.error(
+                        "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                        {
+                          theme: "light",
+                          autoClose: 3000,
+                          draggable: true,
+                          closeOnClick: true,
+                          pauseOnHover: true,
+                          progress: undefined,
+                          hideProgressBar: false,
+                          position: "bottom-center",
+                        }
+                      );
+                    }
+                  } else {
                     await API.createMeetingEvent(
                       description,
                       instructor,
@@ -1078,46 +1113,26 @@ export default function Room() {
                     handleMeetingEvents();
 
                     setModalVisible(false);
-                  } else {
-                    toast.error(
-                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
-                      {
-                        theme: "light",
-                        autoClose: 3000,
-                        draggable: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        progress: undefined,
-                        hideProgressBar: false,
-                        position: "bottom-center",
-                      }
-                    );
                   }
-                } else {
-                  await API.createMeetingEvent(
-                    description,
-                    instructor,
-                    startDate,
-                    endDate,
-                    startTime,
-                    endTime,
-                    recurrence,
-                    room,
-                    isMain
-                  );
-
-                  handleMeetingEvents();
-
-                  setModalVisible(false);
                 }
-              }
-            }}
-            className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-          >
-            <FaRegSave size={25} />
-          </button>
+              }}
+              className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
+            >
+              <FaRegSave size={25} />
+            </button>
+          </div>
+        </ReactModal>
+      </div>
+    );
+  } else {
+    return (
+      <div className="w-full h-full">
+        <Header />
+
+        <div className="h-[88%] flex items-center justify-center">
+          <OrbitProgress color={colors.metu_red} size="small" />
         </div>
-      </ReactModal>
-    </div>
-  );
+      </div>
+    );
+  }
 }

@@ -34,20 +34,6 @@ const hours = [
 export default function Schedule() {
   const router = useRouter();
 
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
-
-    if (res.loggedIn === false) {
-      router.push("/login");
-    } else {
-      router.push("/class-schedule");
-    }
-  };
-
-  React.useEffect(() => {
-    handleAuth();
-  }, []);
-
   const [rooms, setRooms] = React.useState([]);
   const [events, setEvents] = React.useState<any>([]);
   const [date, setDate] = React.useState(moment(new Date()));
@@ -163,7 +149,16 @@ export default function Schedule() {
     setEvents(_events);
   };
 
+  const handleAuth = async () => {
+    const res = await API.handleAuth();
+
+    if (res.loggedIn === false) {
+      router.push("/login");
+    }
+  };
+
   React.useEffect(() => {
+    handleAuth();
     handleData();
   }, []);
 
