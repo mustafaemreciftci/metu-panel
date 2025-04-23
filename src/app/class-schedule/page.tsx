@@ -37,7 +37,7 @@ export default function Schedule() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (res.loggedIn === falsen) {
+    if (res.loggedIn === false) {
       router.push("/login");
     } else {
       router.push("/class-program");
