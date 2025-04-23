@@ -40,7 +40,7 @@ export default function Schedule() {
     if (res.loggedIn === false) {
       router.push("/login");
     } else {
-      router.push("/class-program");
+      router.push("/class-schedule");
     }
   };
 

@@ -37,7 +37,7 @@ export default function Room() {
     if (res.loggedIn === false) {
       router.push("/login");
     } else {
-      router.push("/class-program");
+      router.push("/room-program");
     }
   };
 
