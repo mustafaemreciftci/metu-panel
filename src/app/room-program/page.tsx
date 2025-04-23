@@ -223,7 +223,7 @@ export default function Room() {
 
     setTimeout(() => {
       setLoaded(true);
-    }, 2000);
+    }, 500);
   };
 
   const handleAuth = async () => {

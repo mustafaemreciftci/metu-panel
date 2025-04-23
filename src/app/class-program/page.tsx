@@ -259,7 +259,7 @@ export default function Class() {
 
     setTimeout(() => {
       setLoaded(true);
-    }, 2000);
+    }, 500);
   };
 
   const handleAuth = async () => {
