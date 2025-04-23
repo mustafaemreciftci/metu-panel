@@ -18,7 +18,7 @@ export default function Header() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (res.unauthorized === false) {
+    if (res.loggedIn !== false) {
       setRole(res.role);
     }
   };
