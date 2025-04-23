@@ -54,9 +54,6 @@ export default function Class() {
   const [eventDeleteID, setEventDeleteID] = React.useState(null);
   const [eventDeleteDate, setEventDeleteDate] = React.useState(null);
 
-  const [deleteEventModalVisible, setDeleteEventModalVisible] =
-    React.useState(false);
-
   const [room, setRoom] = React.useState(null);
   const [_class, setClass] = React.useState(null);
   const [isExam, setIsExam] = React.useState(false);
@@ -78,6 +75,9 @@ export default function Class() {
   const [updateStartDate, setUpdateStartDate] = React.useState(new Date());
 
   const [modalVisible, setModalVisible] = React.useState(false);
+
+  const dialogRef1 = React.useRef<HTMLDialogElement>(null);
+  const dialogRef2 = React.useRef<HTMLDialogElement>(null);
 
   const handleData = async () => {
     const _classResponse = await API.getClasses();
@@ -377,7 +377,7 @@ export default function Class() {
     setEventDeleteID(event.id as any);
     setEventDeleteDate(moment(event.start).format("YYYY-MM-DD") as any);
 
-    setDeleteEventModalVisible(true);
+    dialogRef1.current?.showModal();
   };
 
   return (
@@ -578,183 +578,234 @@ export default function Class() {
         }}
       />
 
-      <ReactModal
-        ariaHideApp={false}
-        style={{
-          overlay: {
-            zIndex: 99,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-          },
-          content: {
-            top: "10vh",
-            left: "30vw",
-            width: "40vw",
-            height: "80vh",
-            backgroundColor: "white",
-          },
-        }}
-        isOpen={deleteEventModalVisible}
-      >
-        <div
-          className="flex pl-[5%] pr-[5%] flex-row justify-between"
-          id="class-delete-modal-header"
-        >
-          <h2>Ders - Etkinlik Düzenle</h2>
-
-          <button
-            className="text-2xl bg-white"
-            onClick={() => setDeleteEventModalVisible(false)}
+      <dialog ref={dialogRef1} className="modal">
+        <div className="modal-box h-[70vh]">
+          <div
+            className="flex pl-[5%] pr-[5%] flex-row justify-between"
+            id="class-delete-modal-header"
           >
-            <IoMdClose />
-          </button>
-        </div>
+            <h2 className="text-2xl">Ders - Etkinlik Düzenle</h2>
 
-        <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
-          <Creatable
-            onChange={(data: any) =>
-              setUpdateRoom(data.label.split("|")[0].trim())
-            }
-            placeholder={"Yer"}
-            options={roomsExtra}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setUpdateClass(data.label)}
-            placeholder={"Ders"}
-            options={courses}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setUpdateInstructor(data.label)}
-            placeholder={"Hoca"}
-            options={instructors}
-          />
-
-          <div className="h-[5%]" />
-
-          <Creatable
-            onChange={(data: any) => setUpdateRecurrence(data.value)}
-            placeholder={"Tekrar sıklığı"}
-            options={[
-              { value: "o", label: "Tek sefer" },
-              { value: "d", label: "Her gün" },
-              { value: "w", label: "Her hafta" },
-              { value: "m", label: "Her ay" },
-            ]}
-          />
-
-          <div className="h-[5%]" />
-
-          <div className="flex flex-row justify-around">
-            <DatePicker
-              className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-              selected={updateStartDate}
-              onChange={(date) => setUpdateStartDate(date!)}
-              dateFormat={"dd/MM/yyyy"}
-            />
-
-            <DatePicker
-              className="w-[250px] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
-              selected={updateEndDate}
-              onChange={(date) => setUpdateEndDate(date!)}
-              dateFormat={"dd/MM/yyyy"}
-            />
+            <button
+              className="text-2xl bg-white"
+              onClick={() => dialogRef1.current?.close()}
+            >
+              <IoMdClose />
+            </button>
           </div>
 
-          <div className="h-[5%]" />
+          <div className="h-[10%]" />
 
-          <div className="flex flex-row justify-around">
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setUpdateStartTime(data.value);
-                }}
-                placeholder={"Başlangıç Saati"}
-                options={[
-                  { value: "8:40:00", label: "8:40" },
-                  { value: "9:40:00", label: "9:40" },
-                  { value: "10:40:00", label: "10:40" },
-                  { value: "11:40:00", label: "11:40" },
-                  { value: "12:40:00", label: "12:40" },
-                  { value: "13:40:00", label: "13:40" },
-                  { value: "14:40:00", label: "14:40" },
-                  { value: "15:40:00", label: "15:40" },
-                  { value: "16:40:00", label: "16:40" },
-                  { value: "17:40:00", label: "17:40" },
-                  { value: "18:40:00", label: "18:40" },
-                  { value: "19:40:00", label: "19:40" },
-                  { value: "20:40:00", label: "20:40" },
-                  { value: "21:40:00", label: "21:40" },
-                  { value: "22:40:00", label: "22:40" },
-                  { value: "23:40:00", label: "23:40" },
-                ]}
+          <div className="h-[65%] mt-[2.5%] pl-[5%] pr-[5%] justify-around">
+            <Creatable
+              onChange={(data: any) =>
+                setUpdateRoom(data.label.split("|")[0].trim())
+              }
+              placeholder={"Yer"}
+              options={roomsExtra}
+            />
+
+            <div className="h-[5%]" />
+
+            <Creatable
+              onChange={(data: any) => setUpdateClass(data.label)}
+              placeholder={"Ders"}
+              options={courses}
+            />
+
+            <div className="h-[5%]" />
+
+            <Creatable
+              onChange={(data: any) => setUpdateInstructor(data.label)}
+              placeholder={"Hoca"}
+              options={instructors}
+            />
+
+            <div className="h-[5%]" />
+
+            <Creatable
+              onChange={(data: any) => setUpdateRecurrence(data.value)}
+              placeholder={"Tekrar sıklığı"}
+              options={[
+                { value: "o", label: "Tek sefer" },
+                { value: "d", label: "Her gün" },
+                { value: "w", label: "Her hafta" },
+                { value: "m", label: "Her ay" },
+              ]}
+            />
+
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <DatePicker
+                className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                selected={updateStartDate}
+                onChange={(date) => setUpdateStartDate(date!)}
+                dateFormat={"dd/MM/yyyy"}
+              />
+
+              <div className="w-4" />
+
+              <DatePicker
+                className="w-[100%] h-[35px] rounded-[5px] text-center border-solid border-[1px] border-[#b8b8b8]"
+                selected={updateEndDate}
+                onChange={(date) => setUpdateEndDate(date!)}
+                dateFormat={"dd/MM/yyyy"}
               />
             </div>
 
-            <div style={{ width: 250 }}>
-              <Creatable
-                onChange={(data: any) => {
-                  setUpdateEndTime(data.value);
-                }}
-                placeholder={"Bitiş Saati"}
-                options={[
-                  { value: "8:40:00", label: "8:40" },
-                  { value: "9:40:00", label: "9:40" },
-                  { value: "10:40:00", label: "10:40" },
-                  { value: "11:40:00", label: "11:40" },
-                  { value: "12:40:00", label: "12:40" },
-                  { value: "13:40:00", label: "13:40" },
-                  { value: "14:40:00", label: "14:40" },
-                  { value: "15:40:00", label: "15:40" },
-                  { value: "16:40:00", label: "16:40" },
-                  { value: "17:40:00", label: "17:40" },
-                  { value: "18:40:00", label: "18:40" },
-                  { value: "19:40:00", label: "19:40" },
-                  { value: "20:40:00", label: "20:40" },
-                  { value: "21:40:00", label: "21:40" },
-                  { value: "22:40:00", label: "22:40" },
-                  { value: "23:40:00", label: "23:40" },
-                ]}
-              />
+            <div className="h-[5%]" />
+
+            <div className="flex flex-row justify-around">
+              <div className="w-80">
+                <Creatable
+                  onChange={(data: any) => {
+                    setUpdateStartTime(data.value);
+                  }}
+                  placeholder={"Başlangıç Saati"}
+                  options={[
+                    { value: "8:40:00", label: "8:40" },
+                    { value: "9:40:00", label: "9:40" },
+                    { value: "10:40:00", label: "10:40" },
+                    { value: "11:40:00", label: "11:40" },
+                    { value: "12:40:00", label: "12:40" },
+                    { value: "13:40:00", label: "13:40" },
+                    { value: "14:40:00", label: "14:40" },
+                    { value: "15:40:00", label: "15:40" },
+                    { value: "16:40:00", label: "16:40" },
+                    { value: "17:40:00", label: "17:40" },
+                    { value: "18:40:00", label: "18:40" },
+                    { value: "19:40:00", label: "19:40" },
+                    { value: "20:40:00", label: "20:40" },
+                    { value: "21:40:00", label: "21:40" },
+                    { value: "22:40:00", label: "22:40" },
+                    { value: "23:40:00", label: "23:40" },
+                  ]}
+                />
+              </div>
+
+              <div className="w-4" />
+
+              <div className="w-80">
+                <Creatable
+                  onChange={(data: any) => {
+                    setUpdateEndTime(data.value);
+                  }}
+                  placeholder={"Bitiş Saati"}
+                  options={[
+                    { value: "8:40:00", label: "8:40" },
+                    { value: "9:40:00", label: "9:40" },
+                    { value: "10:40:00", label: "10:40" },
+                    { value: "11:40:00", label: "11:40" },
+                    { value: "12:40:00", label: "12:40" },
+                    { value: "13:40:00", label: "13:40" },
+                    { value: "14:40:00", label: "14:40" },
+                    { value: "15:40:00", label: "15:40" },
+                    { value: "16:40:00", label: "16:40" },
+                    { value: "17:40:00", label: "17:40" },
+                    { value: "18:40:00", label: "18:40" },
+                    { value: "19:40:00", label: "19:40" },
+                    { value: "20:40:00", label: "20:40" },
+                    { value: "21:40:00", label: "21:40" },
+                    { value: "22:40:00", label: "22:40" },
+                    { value: "23:40:00", label: "23:40" },
+                  ]}
+                />
+              </div>
             </div>
+
+            <div className="h-[5%]" />
+
+            <label className="flex items-center">
+              <input
+                className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
+                type="checkbox"
+                checked={updateIsExam}
+                onChange={() => {
+                  setUpdateIsExam(!updateIsExam);
+                }}
+              />
+              &nbsp;&nbsp;&nbsp;Sınavlar için bu kutucuğu işaretleyin.
+            </label>
           </div>
 
-          <div className="h-[5%]" />
+          <div className="modal-action mt-12 flex justify-center items-center">
+            <button
+              className="btn btn-md btn-secondary"
+              onClick={async () => {
+                await API.deleteClassEvent(eventDeleteID, eventDeleteDate);
 
-          <label className="flex items-center">
-            <input
-              className="w-[30px] h-[30px] appearance-none rounded-[3px] relative inline-block border-[1px] border-solid border-[#b8b8b8]"
-              type="checkbox"
-              checked={updateIsExam}
-              onChange={() => {
-                setUpdateIsExam(!updateIsExam);
+                handleClassEvents();
+
+                dialogRef1.current?.close();
               }}
-            />
-            &nbsp;&nbsp;&nbsp;Sınavlar için bu kutucuğu işaretleyin.
-          </label>
+            >
+              Sadece Bunu Sil
+            </button>
 
-          <button
-            onClick={async () => {
-              if (
-                _updateClass !== null &&
-                updateInstructor !== null &&
-                updateStartDate !== null &&
-                updateEndDate !== null &&
-                updateStartTime !== null &&
-                updateEndTime !== null &&
-                updateRecurrence !== null &&
-                updateRoom !== null
-              ) {
-                if (recurrence === "o") {
-                  if (
-                    startDate.getDate() !== undefined &&
-                    endDate.getDate() !== undefined &&
-                    startDate.getDate() === endDate.getDate()
-                  ) {
+            <button
+              className="btn btn-md btn-secondary"
+              onClick={async () => {
+                await API.deleteClassEvents(eventDeleteID);
+
+                handleClassEvents();
+
+                dialogRef1.current?.close();
+              }}
+            >
+              Hepsini Sil
+            </button>
+
+            <button
+              onClick={async () => {
+                if (
+                  _updateClass !== null &&
+                  updateInstructor !== null &&
+                  updateStartDate !== null &&
+                  updateEndDate !== null &&
+                  updateStartTime !== null &&
+                  updateEndTime !== null &&
+                  updateRecurrence !== null &&
+                  updateRoom !== null
+                ) {
+                  if (recurrence === "o") {
+                    if (
+                      startDate.getDate() !== undefined &&
+                      endDate.getDate() !== undefined &&
+                      startDate.getDate() === endDate.getDate()
+                    ) {
+                      await API.updateClassEvent(
+                        eventDeleteID,
+                        _updateClass,
+                        updateInstructor,
+                        updateStartDate,
+                        updateEndDate,
+                        updateStartTime,
+                        updateEndTime,
+                        updateRecurrence,
+                        updateRoom,
+                        updateIsExam
+                      );
+
+                      handleClassEvents();
+
+                      dialogRef1.current?.close();
+                    } else {
+                      toast.error(
+                        "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
+                        {
+                          theme: "light",
+                          autoClose: 3000,
+                          draggable: true,
+                          closeOnClick: true,
+                          pauseOnHover: true,
+                          progress: undefined,
+                          hideProgressBar: false,
+                          position: "bottom-center",
+                        }
+                      );
+                    }
+                  } else {
                     await API.updateClassEvent(
                       eventDeleteID,
                       _updateClass,
@@ -770,74 +821,21 @@ export default function Class() {
 
                     handleClassEvents();
 
-                    setDeleteEventModalVisible(false);
-                  } else {
-                    toast.error(
-                      "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
-                      {
-                        theme: "light",
-                        autoClose: 3000,
-                        draggable: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        progress: undefined,
-                        hideProgressBar: false,
-                        position: "bottom-center",
-                      }
-                    );
+                    dialogRef1.current?.close();
                   }
-                } else {
-                  await API.updateClassEvent(
-                    eventDeleteID,
-                    _updateClass,
-                    updateInstructor,
-                    updateStartDate,
-                    updateEndDate,
-                    updateStartTime,
-                    updateEndTime,
-                    updateRecurrence,
-                    updateRoom,
-                    updateIsExam
-                  );
-
-                  handleClassEvents();
-
-                  setDeleteEventModalVisible(false);
                 }
-              }
-            }}
-            className="w-[4vw] right-[50px] height-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-          >
-            <FaRegSave size={25} />
-          </button>
-
-          <button
-            className="w-[30%] bottom-[40px] right-[150px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
-            onClick={async () => {
-              await API.deleteClassEvent(eventDeleteID, eventDeleteDate);
-
-              handleClassEvents();
-
-              setDeleteEventModalVisible(false);
-            }}
-          >
-            Sadece Bunu Sil
-          </button>
-
-          <button
-            className="w-[30%] bottom-[40px] right-[425px] text-[15px] overflow-hidden font-bold absolute rounded-[10px] border-1 border-solid border-[#c00000] bg-[#c00000]"
-            onClick={async () => {
-              await API.deleteClassEvents(eventDeleteID);
-
-              handleClassEvents();
-
-              setDeleteEventModalVisible(false);
-            }}
-          >
-            Hepsini Sil
-          </button>
+              }}
+              className="btn btn-primary w-14 h-14 flex items-center justify-center rounded-full"
+            >
+              <FaRegSave color="white" size={20} />
+            </button>
+          </div>
         </div>
-      </ReactModal>
+
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
 
       <ReactModal
         style={{

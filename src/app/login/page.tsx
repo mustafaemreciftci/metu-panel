@@ -14,24 +14,24 @@ export default function Login() {
   const [password, setPassword] = React.useState("");
 
   return (
-    <div className="gap-[12px] h-full flex items-center flex-col justify-center">
+    <div className="gap-[12px] h-[100vh] flex flex-col items-center justify-center">
       <input
-        className="w-[14%] h-[30px] border-none text-center border-b-[1px] border-b-solid border-b-black"
+        type="text"
         value={email}
-        onChange={(value) => setEmail(value.target.value)}
         placeholder="Mail adresi"
+        className="input focus:outline-0"
+        onChange={(value) => setEmail(value.target.value)}
       />
 
       <input
-        className="w-[14%] h-[30px] border-none text-center border-b-[1px] border-b-solid border-b-black"
         type="password"
         value={password}
-        onChange={(value) => setPassword(value.target.value)}
         placeholder="Şifre"
+        className="input focus:outline-0"
+        onChange={(value) => setPassword(value.target.value)}
       />
 
       <button
-        className="w-[10%] border-none h-[40px] flex mt-[40px] rounded-[8px] items-center justify-center bg-[#c00000]"
         onClick={async () => {
           const authStatus = await API.login(email, password);
 
@@ -50,13 +50,10 @@ export default function Login() {
             router.push("/class-program");
           }
         }}
+        className="btn btn-wide btn-primary mt-8"
       >
-        <h3>Giriş Yap</h3>
+        Giriş Yap
       </button>
-
-      <h3 style={{ position: "absolute", bottom: 20 }}>
-        Mustafa Emre Çiftçi tarafından ODTÜ EEMB için hazırlanmıştır.
-      </h3>
     </div>
   );
 }

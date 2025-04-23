@@ -30,7 +30,6 @@ const hours = [
   "22.40",
   "23.40",
 ];
-const rooms: { value: string; label: any }[] = [];
 
 export default function Schedule() {
   const router = useRouter();
@@ -47,6 +46,7 @@ export default function Schedule() {
     handleAuth();
   }, []);
 
+  const [rooms, setRooms] = React.useState([]);
   const [events, setEvents] = React.useState<any>([]);
   const [date, setDate] = React.useState(moment(new Date()));
 
@@ -55,16 +55,20 @@ export default function Schedule() {
   const handleData = async () => {
     const _classRoomsResponse = await API.getClassRooms();
 
+    const newRooms: any = [];
+
     for (
       let _classRoomsIndex = 0;
       _classRoomsIndex < _classRoomsResponse.length;
       _classRoomsIndex++
     ) {
-      rooms.push({
+      newRooms.push({
         value: JSON.stringify(_classRoomsIndex),
         label: _classRoomsResponse[_classRoomsIndex].name,
       });
     }
+
+    setRooms(newRooms);
 
     setLoaded(true);
   };
@@ -167,91 +171,88 @@ export default function Schedule() {
 
   if (loaded) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-[100vw] h-full flex flex-col justify-center">
         <Header />
 
-        <div className="gap-[12px] h-[40px] flex ml-[1vw] mt-[16px] items-center">
-          <button
-            className="w-[70px] border-none h-[30px] flex rounded-[8px] items-center justify-center"
-            onClick={() => {
-              setDate(moment(date.subtract(1, "day")));
-            }}
-          >
-            <h4>Geri</h4>
-          </button>
+        <div className="gap-8 flex ml-10 mt-8 items-center">
+          <div className="badge badge-soft badge-xl badge-primary">
+            <button
+              className="btn btn-ghost btn-xs btn-primary"
+              onClick={() => {
+                setDate(moment(date.subtract(1, "day")));
+              }}
+            >
+              <p className="text-lg">Geri</p>
+            </button>
 
-          <h3>Tarih: {date.format("DD/MM/yyyy").toString()}</h3>
+            <p className="font-bold">
+              Tarih: {date.format("DD/MM/yyyy").toString()}
+            </p>
 
-          <button
-            className="w-[70px] border-none h-[30px] flex rounded-[8px] items-center justify-center"
-            onClick={() => {
-              setDate(moment(date.add(1, "day")));
-            }}
-          >
-            <h4>İleri</h4>
-          </button>
+            <button
+              className="btn btn-ghost btn-xs btn-primary"
+              onClick={() => {
+                setDate(moment(date.add(1, "day")));
+              }}
+            >
+              <p className="text-lg">İleri</p>
+            </button>
+          </div>
         </div>
 
-        <table className="mt-[2vh] ml-[1vw] border-collapse border-r-[1px] border-l-[1px] border-[#b8b8b8]">
-          <thead className="block">
-            <tr>
-              <th className="h-[6vh] w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]">
-                Saat / Yer
-              </th>
+        <div className="w-[96%] max-h-[70vh] mt-4 ml-[2%] mr-[2%] overflow-y-auto rounded-box border border-base-content/5 bg-base-100">
+          <table className="table table-zebra">
+            <thead>
+              <tr>
+                <th className="h-[6vh] w-[5.88vw]">Saat / Yer</th>
 
-              {hours.map((hour, index) => (
-                <th
-                  className="h-[6vh] w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
-                  key={index}
-                >
-                  {hour}
-                </th>
-              ))}
-            </tr>
-          </thead>
+                {hours.map((hour, index) => (
+                  <th className="h-[6vh] w-[5.88vw]" key={index}>
+                    {hour}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody className="h-[70vh] block overflow-y-auto">
-            {rooms.map((room, index) => {
-              return (
-                <tr key={index}>
-                  <td className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]">
-                    {room.label}
-                  </td>
+            <tbody>
+              {rooms.map((room: any, index) => {
+                return (
+                  <tr key={index}>
+                    <td className="h-[6vh] text-center w-[5.88vw]">
+                      {room.label}
+                    </td>
 
-                  {hours.map((_, index) => {
-                    {
-                      for (let i = 0; i < events.length; i++) {
-                        const event = events[i];
+                    {hours.map((_, index) => {
+                      {
+                        for (let i = 0; i < events.length; i++) {
+                          const event = events[i];
 
-                        if (
-                          room.label === event.room &&
-                          event.start <= index + 8 &&
-                          event.end >= index + 8
-                        ) {
-                          return (
-                            <td
-                              className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
-                              key={index}
-                            >
-                              {event.class} - {event.instructor}
-                            </td>
-                          );
+                          if (
+                            room.label === event.room &&
+                            event.start <= index + 8 &&
+                            event.end >= index + 8
+                          ) {
+                            return (
+                              <td className="h-[6vh] w-[5.88vw]" key={index}>
+                                {event.class} - {event.instructor}
+                              </td>
+                            );
+                          }
                         }
-                      }
 
-                      return (
-                        <td
-                          className="h-[6vh] text-center w-[5.5vw] items-center border-collapse border-[1px] border-solid border-[#b8b8b8]"
-                          key={index}
-                        ></td>
-                      );
-                    }
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        return (
+                          <td className="h-[6vh] w-[5.88vw]" key={index}>
+                            Müsait
+                          </td>
+                        );
+                      }
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   } else {

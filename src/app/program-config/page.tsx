@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
-import ReactModal from "react-modal";
-import { MdDelete } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import { FaRegSave } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import React, { useRef, useState } from "react";
 import { OrbitProgress } from "react-loading-indicators";
 
 // components
@@ -315,327 +313,184 @@ export default function Config() {
     handleData();
   }, []);
 
+  const [category, setCategory] = useState("Hoca");
+
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   if (loaded) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex flex-col justify-center">
         <Header />
 
-        <div className="flex flex-row">
-          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
-            <div
-              style={{
-                width: "100%",
-              }}
-            >
-              {instructors.map((instructor: any, index: number) => {
-                return (
-                  <div
-                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
-                    style={{
-                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                    }}
-                    key={index}
-                  >
-                    <p>{instructor.label}</p>
+        <fieldset className="fieldset self-start ml-10 mt-4">
+          <legend className="fieldset-legend">Kategoriler</legend>
 
-                    <MdDelete
-                      onClick={async () => {
-                        await API.deleteInstructor(instructor.label);
+          <select
+            onChange={(event) => setCategory(event.target.value)}
+            defaultValue="Hoca"
+            className="select"
+          >
+            <option>Hoca</option>
+            <option>Ders</option>
+            <option>Sınıf</option>
+            <option>Toplantı Odası</option>
+          </select>
+        </fieldset>
 
-                        handleData("instructors");
-                      }}
-                      size={20}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+        <div className="w-[96%] max-h-[60vh] mt-4 ml-[2%] mr-[2%] overflow-y-auto rounded-box border border-base-content/5 bg-base-100">
+          <table className="table table-zebra">
+            <thead>
+              <tr>
+                <th>İsim</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
 
-            <button
-              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
-              onClick={() => {
-                setModalType("instructor");
-                setModalVisible(true);
-              }}
-            >
-              Hoca Ekle
-            </button>
-          </div>
+            <tbody>
+              {category === "Hoca" ? (
+                <>
+                  {instructors.map((instructor: any, index: number) => {
+                    return (
+                      <tr key={index}>
+                        <td>{instructor.label}</td>
 
-          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
-            <div
-              style={{
-                width: "100%",
-              }}
-            >
-              {courses.map((course: any, index: number) => {
-                return (
-                  <div
-                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
-                    style={{
-                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                    }}
-                    key={index}
-                  >
-                    <p>{course.label}</p>
+                        <td>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={async () => {
+                              await API.deleteInstructor(instructor.label);
 
-                    <MdDelete
-                      onClick={async () => {
-                        await API.deleteClass(course.label);
+                              handleData("instructors");
+                            }}
+                          >
+                            Sil
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
+              ) : category === "Ders" ? (
+                <>
+                  {courses.map((course: any, index: number) => {
+                    return (
+                      <tr key={index}>
+                        <td>{course.label}</td>
 
-                        handleData("courses");
-                      }}
-                      size={20}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                        <td>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={async () => {
+                              await API.deleteInstructor(course.label);
 
-            <button
-              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
-              onClick={() => {
-                setModalType("class");
-                setModalVisible(true);
-              }}
-            >
-              Ders Ekle
-            </button>
-          </div>
+                              handleData("courses");
+                            }}
+                          >
+                            Sil
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
+              ) : category === "Sınıf" ? (
+                <>
+                  {classRooms.map((classRoom: any, index: number) => {
+                    return (
+                      <tr key={index}>
+                        <td>{classRoom.label}</td>
 
-          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
-            <div
-              style={{
-                width: "100%",
-              }}
-            >
-              {classRooms.map((classRoom: any, index: number) => {
-                return (
-                  <div
-                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
-                    style={{
-                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                    }}
-                    key={index}
-                  >
-                    <p>{classRoom.label}</p>
+                        <td>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={async () => {
+                              await API.deleteInstructor(classRoom.label);
 
-                    <MdDelete
-                      onClick={async () => {
-                        await API.deleteClassRoom(classRoom.label);
+                              handleData("classRooms");
+                            }}
+                          >
+                            Sil
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  {meetingRooms.map((meetingRoom: any, index: number) => {
+                    return (
+                      <tr key={index}>
+                        <td>{meetingRoom.label}</td>
 
-                        handleData("classRooms");
-                      }}
-                      size={20}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                        <td>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={async () => {
+                              await API.deleteInstructor(meetingRoom.label);
 
-            <button
-              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
-              onClick={() => {
-                setModalType("classRoom");
-                setModalVisible(true);
-              }}
-            >
-              Sınıf Ekle
-            </button>
-          </div>
-
-          <div className="w-[22%] h-[100%] flex mt-[2%] pl-[2%] items-center flex-col">
-            <div
-              style={{
-                width: "100%",
-              }}
-            >
-              {meetingRooms.map((meetingRoom: any, index: number) => {
-                return (
-                  <div
-                    className="h-[40px] flex pl-[5%] pr-[5%] items-center justify-between"
-                    style={{
-                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                    }}
-                    key={index}
-                  >
-                    <p>{meetingRoom.label}</p>
-
-                    <MdDelete
-                      onClick={async () => {
-                        await API.deleteMeetingRoom(meetingRoom.label);
-
-                        handleData("meetingRooms");
-                      }}
-                      size={20}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            <button
-              className="w-[250px] h-[40px] border-none mt-[10%] text-2xl font-bold rounded-[10px] bg-[#c00000]"
-              onClick={() => {
-                setModalType("meetingRoom");
-                setModalVisible(true);
-              }}
-            >
-              Toplantı Odası Ekle
-            </button>
-          </div>
+                              handleData("meetingRoom");
+                            }}
+                          >
+                            Sil
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <ReactModal
-          style={{
-            overlay: {
-              zIndex: 99,
-              backgroundColor: "rgba(0, 0, 0, 0)",
-            },
-            content: {
-              top: "30vh",
-              left: "30vw",
-              width: "40vw",
-              height: "40vh",
-              backgroundColor: "white",
-            },
+        <button
+          onClick={async () => {
+            switch (category) {
+              case "Hoca":
+                setModalType("instructor");
+
+                dialogRef.current?.showModal();
+
+                break;
+
+              case "Ders":
+                setModalType("class");
+
+                dialogRef.current?.showModal();
+
+                break;
+
+              case "Sınıf":
+                setModalType("classRoom");
+
+                dialogRef.current?.showModal();
+
+                break;
+
+              case "Toplantı Odası":
+                setModalType("meetingRoom");
+
+                dialogRef.current?.showModal();
+
+                break;
+            }
           }}
-          ariaHideApp={false}
-          isOpen={modalVisible}
+          className="btn btn-wide btn-primary ml-8 mt-8"
         >
-          {modalType === "instructor" ? (
-            <div className="pl-[5%]">
-              <div className="flex pr-[5%] flex-row justify-between">
-                <h2>Hoca Ekle</h2>
+          Ekle
+        </button>
 
-                <button
-                  className="border-none text-2xl bg-white"
-                  onClick={() => setModalVisible(false)}
-                >
-                  <IoMdClose />
-                </button>
-              </div>
-
-              <div style={{ height: 30 }} />
-
-              <input
-                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                onChange={(value) => setInstructorName(value.target.value)}
-                placeholder="Hocanın tam adı"
-              />
-
-              <button
-                onClick={async () => {
-                  await API.addInstructor(instructorName);
-
-                  handleData("instructors");
-
-                  setModalVisible(false);
-                }}
-                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-              >
-                <FaRegSave size={25} />
-              </button>
-            </div>
-          ) : modalType === "classRoom" ? (
-            <div className="pl-[5%]">
-              <div className="flex pr-[5%] flex-row justify-between">
-                <h2>Sınıf Ekle</h2>
-
-                <button
-                  className="border-none text-2xl bg-white"
-                  onClick={() => setModalVisible(false)}
-                >
-                  <IoMdClose />
-                </button>
-              </div>
-
-              <div style={{ height: 30 }} />
-
-              <input
-                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                onChange={(value) => setClassRoomName(value.target.value)}
-                placeholder="Sınıf adı"
-              />
-
-              <div style={{ height: 15 }} />
-
-              <input
-                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                onChange={(value) => setClassRoomCapacity(value.target.value)}
-                placeholder="Sınıf kapasitesi"
-              />
-
-              <div style={{ height: 15 }} />
-
-              <input
-                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                onChange={(value) =>
-                  setClassRoomExamCapacity(value.target.value)
-                }
-                placeholder="Sınıf sınav kapasitesi"
-              />
-
-              <button
-                onClick={async () => {
-                  await API.addClassRoom(
-                    classRoomName,
-                    classRoomCapacity,
-                    classRoomExamCapacity
-                  );
-
-                  handleData("classRooms");
-
-                  setModalVisible(false);
-                }}
-                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-              >
-                <FaRegSave size={25} />
-              </button>
-            </div>
-          ) : modalType === "class" ? (
-            <div className="pl-[5%]">
-              <div className="flex pr-[5%] flex-row justify-between">
-                <h2>Ders Ekle</h2>
-
-                <button
-                  className="border-none text-2xl bg-white"
-                  onClick={() => setModalVisible(false)}
-                >
-                  <IoMdClose />
-                </button>
-              </div>
-
-              <div style={{ height: 30 }} />
-
-              <input
-                className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                onChange={(value) => setClassName(value.target.value)}
-                placeholder="Dersin adı"
-              />
-
-              <button
-                onClick={async () => {
-                  await API.addClass(className);
-
-                  handleData("courses");
-
-                  setModalVisible(false);
-                }}
-                className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
-              >
-                <FaRegSave size={25} />
-              </button>
-            </div>
-          ) : (
-            modalType === "meetingRoom" && (
+        <dialog ref={dialogRef} className="modal">
+          <div className="modal-box w-[40vw] h-[40vh]">
+            {modalType === "instructor" ? (
               <div className="pl-[5%]">
                 <div className="flex pr-[5%] flex-row justify-between">
-                  <h2>Toplantı Odası Ekle</h2>
+                  <h2>Hoca Ekle</h2>
 
                   <button
                     className="border-none text-2xl bg-white"
-                    onClick={() => setModalVisible(false)}
+                    onClick={() => dialogRef.current?.close()}
                   >
                     <IoMdClose />
                   </button>
@@ -644,40 +499,177 @@ export default function Config() {
                 <div style={{ height: 30 }} />
 
                 <input
-                  className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
-                  onChange={(value) => setMeetingRoomName(value.target.value)}
-                  placeholder="Toplantı odası adı"
+                  type="text"
+                  className="input focus:outline-0"
+                  placeholder="Hocanın tam adı"
+                  onChange={(value) => setInstructorName(value.target.value)}
+                />
+
+                <button
+                  onClick={async () => {
+                    await API.addInstructor(instructorName);
+
+                    handleData("instructors");
+
+                    setModalVisible(false);
+                  }}
+                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
+                >
+                  <FaRegSave color="white" size={20} />
+                </button>
+              </div>
+            ) : modalType === "classRoom" ? (
+              <div className="pl-[5%]">
+                <div className="flex pr-[5%] flex-row justify-between">
+                  <h2>Sınıf Ekle</h2>
+
+                  <button
+                    className="border-none text-2xl bg-white"
+                    onClick={() => dialogRef.current?.close()}
+                  >
+                    <IoMdClose />
+                  </button>
+                </div>
+
+                <div style={{ height: 30 }} />
+
+                <input
+                  type="text"
+                  className="input focus:outline-0"
+                  onChange={(value) => setClassRoomName(value.target.value)}
+                  placeholder="Sınıf adı"
                 />
 
                 <div style={{ height: 15 }} />
 
                 <input
-                  className="w-[250px] h-[30px] border-none border-b-[1px] border-b-solid border-b-black"
+                  type="text"
+                  className="input focus:outline-0"
+                  onChange={(value) => setClassRoomCapacity(value.target.value)}
+                  placeholder="Sınıf kapasitesi"
+                />
+
+                <div style={{ height: 15 }} />
+
+                <input
+                  type="text"
+                  className="input focus:outline-0"
                   onChange={(value) =>
-                    setMeetingRoomCapacity(value.target.value)
+                    setClassRoomExamCapacity(value.target.value)
                   }
-                  placeholder="Toplantı odası kapasitesi"
+                  placeholder="Sınıf sınav kapasitesi"
                 />
 
                 <button
                   onClick={async () => {
-                    await API.addMeetingRoom(
-                      meetingRoomName,
-                      meetingRoomCapacity
+                    await API.addClassRoom(
+                      classRoomName,
+                      classRoomCapacity,
+                      classRoomExamCapacity
                     );
 
-                    handleData("meetingRooms");
+                    handleData("classRooms");
 
                     setModalVisible(false);
                   }}
-                  className="w-[4vw] right-[50px] h-[4vw] bottom-[30px] border-none overflow-hidden rounded-[2vw] absolute bg-[#c00000]"
+                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
                 >
-                  <FaRegSave size={25} />
+                  <FaRegSave color="white" size={20} />
                 </button>
               </div>
-            )
-          )}
-        </ReactModal>
+            ) : modalType === "class" ? (
+              <div className="pl-[5%]">
+                <div className="flex pr-[5%] flex-row justify-between">
+                  <h2>Ders Ekle</h2>
+
+                  <button
+                    className="border-none text-2xl bg-white"
+                    onClick={() => dialogRef.current?.close()}
+                  >
+                    <IoMdClose />
+                  </button>
+                </div>
+
+                <div style={{ height: 30 }} />
+
+                <input
+                  type="text"
+                  placeholder="Dersin adı"
+                  className="input focus:outline-0"
+                  onChange={(value) => setClassName(value.target.value)}
+                />
+
+                <button
+                  onClick={async () => {
+                    await API.addClass(className);
+
+                    handleData("courses");
+
+                    setModalVisible(false);
+                  }}
+                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
+                >
+                  <FaRegSave color="white" size={20} />
+                </button>
+              </div>
+            ) : (
+              modalType === "meetingRoom" && (
+                <div className="pl-[5%]">
+                  <div className="flex pr-[5%] flex-row justify-between">
+                    <h2>Toplantı Odası Ekle</h2>
+
+                    <button
+                      className="border-none text-2xl bg-white"
+                      onClick={() => dialogRef.current?.close()}
+                    >
+                      <IoMdClose />
+                    </button>
+                  </div>
+
+                  <div style={{ height: 30 }} />
+
+                  <input
+                    type="text"
+                    className="input focus:outline-0"
+                    onChange={(value) => setMeetingRoomName(value.target.value)}
+                    placeholder="Toplantı odası adı"
+                  />
+
+                  <div style={{ height: 15 }} />
+
+                  <input
+                    type="text"
+                    className="input focus:outline-0"
+                    onChange={(value) =>
+                      setMeetingRoomCapacity(value.target.value)
+                    }
+                    placeholder="Toplantı odası kapasitesi"
+                  />
+
+                  <button
+                    onClick={async () => {
+                      await API.addMeetingRoom(
+                        meetingRoomName,
+                        meetingRoomCapacity
+                      );
+
+                      handleData("meetingRooms");
+
+                      setModalVisible(false);
+                    }}
+                    className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
+                  >
+                    <FaRegSave color="white" size={20} />
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </div>
     );
   } else {
