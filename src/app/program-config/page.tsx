@@ -21,7 +21,7 @@ export default function Config() {
   const handleAuth = async () => {
     const res = await API.handleAuth();
 
-    if (!res.loggedIn) {
+    if (res.loggedIn === falsen) {
       router.push("/login");
     } else {
       router.push("/class-program");
