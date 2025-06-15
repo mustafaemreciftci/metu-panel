@@ -259,7 +259,7 @@ export default function Class() {
 
     setTimeout(() => {
       setLoaded(true);
-    }, 500);
+    }, 1000);
   };
 
   const handleAuth = async () => {
@@ -928,7 +928,7 @@ export default function Class() {
             <div className="h-[5%]" />
 
             <div className="flex flex-row justify-around">
-              <div style={{ width: 250 }}>
+              <div className="w-80">
                 <Creatable
                   onChange={(data: any) => {
                     setStartTime(data.value);
@@ -955,7 +955,7 @@ export default function Class() {
                 />
               </div>
 
-              <div style={{ width: 250 }}>
+              <div className="w-80">
                 <Creatable
                   onChange={(data: any) => {
                     setEndTime(data.value);

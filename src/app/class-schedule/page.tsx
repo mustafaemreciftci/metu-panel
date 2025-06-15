@@ -60,7 +60,7 @@ export default function Schedule() {
 
     setTimeout(() => {
       setLoaded(true);
-    }, 500);
+    }, 1000);
   };
 
   const handleClassEvents = async () => {
