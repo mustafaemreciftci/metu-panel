@@ -1,8 +1,6 @@
-@import "tailwindcss";
-
-@plugin "daisyui" {
-  themes: light --default;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -12,5 +10,62 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Calendar overrides */
+.rbc-calendar {
+  @apply rounded-lg overflow-hidden;
+}
+
+.rbc-event {
+  @apply border-none !important;
+}
+
+.rbc-today {
+  @apply bg-gray-100;
+}
+
+/* React Select styles */
+.react-select__control {
+  @apply border-gray-300 hover:border-gray-400 !important;
+}
+
+.react-select__control--is-focused {
+  @apply border-blue-500 ring-1 ring-blue-500 !important;
+}
+
+.react-select__menu {
+  @apply z-50 !important;
+}
+
+/* Datepicker styles */
+.react-datepicker {
+  @apply border-gray-300 shadow-lg !important;
+}
+
+.react-datepicker__header {
+  @apply bg-gray-100 !important;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-blue-500 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
 }

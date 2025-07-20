@@ -1,18 +1,29 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import moment from "moment";
 import { useRouter } from "next/navigation";
 import { OrbitProgress } from "react-loading-indicators";
-
-// components
 import Header from "@root/components/Header";
-
-// utils
 import { API } from "@root/utils/API";
 import { colors } from "@root/utils/colors";
 
-const hours = [
+// Types
+interface Room {
+  value: string;
+  label: string;
+}
+
+interface ClassEvent {
+  start: number;
+  end: number;
+  room: string;
+  class: string;
+  instructor: string;
+  is_exam?: boolean;
+}
+
+const HOURS = [
   "08.40",
   "09.40",
   "10.40",
@@ -33,236 +44,190 @@ const hours = [
 
 export default function Schedule() {
   const router = useRouter();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [events, setEvents] = useState<ClassEvent[]>([]);
+  const [date, setDate] = useState(moment());
+  const [loaded, setLoaded] = useState(false);
 
-  const [rooms, setRooms] = React.useState([]);
-  const [events, setEvents] = React.useState<any>([]);
-  const [date, setDate] = React.useState(moment(new Date()));
-
-  const [loaded, setLoaded] = React.useState(false);
-
-  const handleData = async () => {
-    const _classRoomsResponse = await API.getClassRooms();
-
-    const newRooms: any = [];
-
-    for (
-      let _classRoomsIndex = 0;
-      _classRoomsIndex < _classRoomsResponse.length;
-      _classRoomsIndex++
-    ) {
-      newRooms.push({
-        value: JSON.stringify(_classRoomsIndex),
-        label: _classRoomsResponse[_classRoomsIndex].name,
-      });
-    }
-
-    setRooms(newRooms);
-
-    setTimeout(() => {
+  // Fetch rooms data
+  const fetchRooms = useCallback(async () => {
+    try {
+      const classRoomsResponse = await API.getClassRooms();
+      const formattedRooms = classRoomsResponse.map(
+        (room: any, index: number) => ({
+          value: String(index),
+          label: room.name,
+        })
+      );
+      setRooms(formattedRooms);
       setLoaded(true);
-    }, 500);
-  };
-
-  const handleClassEvents = async () => {
-    const _events = [];
-    const response = await API.getClassEvents();
-
-    if (response.length > 0) {
-      for (let _event of response) {
-        const daysInBetween = moment(_event.end_date).diff(
-          _event.start_date,
-          "days"
-        );
-
-        const exclude_dates = [];
-
-        if (_event.exclude_dates !== null) {
-          for (const _date of _event.exclude_dates) {
-            exclude_dates.push(moment(_date).format("YYYY-MM-DD"));
-          }
-        }
-
-        if (_event.recurrence === "d") {
-          for (let i = 0; i <= parseInt(daysInBetween.toString()); i += 1) {
-            if (
-              !exclude_dates.includes(
-                moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
-              ) &&
-              moment(date).format("YYYY-MM-DD") ===
-                moment(_event.start_date).add(i, "days").format("YYYY-MM-DD")
-            ) {
-              _events.push({
-                start: parseInt(_event.start_time.slice(0, 2)),
-                end: parseInt(_event.end_time.slice(0, 2)),
-                room: _event.room,
-                class: _event.class,
-                instructor: _event.instructor,
-              });
-            }
-          }
-        } else if (_event.recurrence === "w") {
-          for (let i = 0; i < Math.ceil(daysInBetween / 7); i++) {
-            if (
-              !exclude_dates.includes(
-                moment(_event.start_date)
-                  .add(i * 7, "days")
-                  .format("YYYY-MM-DD")
-              ) &&
-              moment(date).format("YYYY-MM-DD") ===
-                moment(_event.start_date)
-                  .add(i * 7, "days")
-                  .format("YYYY-MM-DD")
-            ) {
-              _events.push({
-                start: parseInt(_event.start_time.slice(0, 2)),
-                end: parseInt(_event.end_time.slice(0, 2)),
-                room: _event.room,
-                class: _event.class,
-                instructor: _event.instructor,
-              });
-            }
-          }
-        } else if (_event.recurrence === "m") {
-          for (let i = 0; i < Math.ceil(daysInBetween / 30); i++) {
-            if (
-              !exclude_dates.includes(
-                moment(_event.start_date)
-                  .add(i * 30, "days")
-                  .format("YYYY-MM-DD")
-              ) &&
-              moment(date).format("YYYY-MM-DD") ===
-                moment(_event.start_date)
-                  .add(i * 30, "days")
-                  .format("YYYY-MM-DD")
-            ) {
-              _events.push({
-                start: parseInt(_event.start_time.slice(0, 2)),
-                end: parseInt(_event.end_time.slice(0, 2)),
-                room: _event.room,
-                class: _event.class,
-                instructor: _event.instructor,
-              });
-            }
-          }
-        }
-      }
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
     }
-
-    setEvents(_events);
-  };
-
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
-
-    if (res.loggedIn === false) {
-      router.push("/login");
-    }
-  };
-
-  React.useEffect(() => {
-    handleAuth();
-    handleData();
   }, []);
 
-  React.useEffect(() => {
-    handleClassEvents();
+  // Fetch and process events
+  const fetchEvents = useCallback(async () => {
+    try {
+      const response = await API.getClassEvents();
+      const processedEvents: ClassEvent[] = [];
+
+      response.forEach((event: any) => {
+        const daysInBetween = moment(event.end_date).diff(
+          event.start_date,
+          "days"
+        );
+        const excludeDates =
+          event.exclude_dates?.map((d: string) =>
+            moment(d).format("YYYY-MM-DD")
+          ) || [];
+
+        const processEvent = (currentDate: moment.Moment) => {
+          if (
+            !excludeDates.includes(currentDate.format("YYYY-MM-DD")) &&
+            currentDate.format("YYYY-MM-DD") === date.format("YYYY-MM-DD")
+          ) {
+            processedEvents.push({
+              start: parseInt(event.start_time.slice(0, 2)),
+              end: parseInt(event.end_time.slice(0, 2)),
+              room: event.room,
+              class: event.class,
+              instructor: event.instructor,
+              is_exam: event.is_exam,
+            });
+          }
+        };
+
+        switch (event.recurrence) {
+          case "d":
+            for (let i = 0; i <= daysInBetween; i++) {
+              processEvent(moment(event.start_date).add(i, "days"));
+            }
+            break;
+          case "w":
+            for (let i = 0; i < Math.ceil(daysInBetween / 7); i++) {
+              processEvent(moment(event.start_date).add(i * 7, "days"));
+            }
+            break;
+          case "m":
+            for (let i = 0; i < Math.ceil(daysInBetween / 30); i++) {
+              processEvent(moment(event.start_date).add(i * 30, "days"));
+            }
+            break;
+        }
+      });
+
+      setEvents(processedEvents);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
   }, [date]);
 
-  if (loaded) {
-    return (
-      <div className="w-[100vw] h-full flex flex-col justify-center">
-        <Header />
+  // Auth check
+  const checkAuth = useCallback(async () => {
+    try {
+      const res = await API.handleAuth();
+      if (!res.loggedIn) router.push("/login");
+    } catch (error) {
+      console.error("Auth error:", error);
+      router.push("/login");
+    }
+  }, [router]);
 
-        <div className="gap-8 flex ml-10 mt-8 items-center">
-          <div className="badge badge-soft badge-xl badge-primary">
-            <button
-              className="btn btn-ghost btn-xs btn-primary"
-              onClick={() => {
-                setDate(moment(date.subtract(1, "day")));
-              }}
-            >
-              <p className="text-lg">Geri</p>
-            </button>
+  useEffect(() => {
+    checkAuth();
+    fetchRooms();
+  }, [checkAuth, fetchRooms]);
 
-            <p className="font-bold">
-              Tarih: {date.format("DD/MM/yyyy").toString()}
-            </p>
+  useEffect(() => {
+    fetchEvents();
+  }, [date, fetchEvents]);
 
-            <button
-              className="btn btn-ghost btn-xs btn-primary"
-              onClick={() => {
-                setDate(moment(date.add(1, "day")));
-              }}
-            >
-              <p className="text-lg">İleri</p>
-            </button>
-          </div>
-        </div>
+  const handleDateChange = (days: number) => {
+    setDate(moment(date).add(days, "days"));
+  };
 
-        <div className="w-[96%] max-h-[70vh] mt-4 ml-[2%] mr-[2%] overflow-y-auto rounded-box border border-base-content/5 bg-base-100">
-          <table className="table table-zebra">
-            <thead>
-              <tr>
-                <th className="h-[6vh] w-[5.88vw]">Saat / Yer</th>
-
-                {hours.map((hour, index) => (
-                  <th className="h-[6vh] w-[5.88vw]" key={index}>
-                    {hour}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {rooms.map((room: any, index) => {
-                return (
-                  <tr key={index}>
-                    <td className="h-[6vh] text-center w-[5.88vw]">
-                      {room.label}
-                    </td>
-
-                    {hours.map((_, index) => {
-                      {
-                        for (let i = 0; i < events.length; i++) {
-                          const event = events[i];
-
-                          if (
-                            room.label === event.room &&
-                            event.start <= index + 8 &&
-                            event.end >= index + 8
-                          ) {
-                            return (
-                              <td className="h-[6vh] w-[5.88vw]" key={index}>
-                                {event.class} - {event.instructor}
-                              </td>
-                            );
-                          }
-                        }
-
-                        return (
-                          <td className="h-[6vh] w-[5.88vw]" key={index}>
-                            Müsait
-                          </td>
-                        );
-                      }
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+  const getEventForCell = (roomLabel: string, hourIndex: number) => {
+    const hour = hourIndex + 8; // Convert to 24-hour format
+    return events.find(
+      (event) =>
+        event.room === roomLabel && event.start <= hour && event.end >= hour
     );
-  } else {
-    return (
-      <div className="fw-[100vw] h-[100vh]">
-        <Header />
+  };
 
+  if (!loaded) {
+    return (
+      <div className="w-screen h-screen">
+        <Header />
         <div className="h-[88vh] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
       </div>
     );
   }
+
+  return (
+    <div className="w-screen h-full flex flex-col">
+      <Header />
+
+      <div className="gap-8 flex ml-10 mt-8 items-center">
+        <div className="badge badge-soft badge-xl badge-primary">
+          <button
+            className="btn btn-ghost btn-xs btn-primary"
+            onClick={() => handleDateChange(-1)}
+          >
+            <p className="text-lg">Geri</p>
+          </button>
+
+          <p className="font-bold">Tarih: {date.format("DD/MM/yyyy")}</p>
+
+          <button
+            className="btn btn-ghost btn-xs btn-primary"
+            onClick={() => handleDateChange(1)}
+          >
+            <p className="text-lg">İleri</p>
+          </button>
+        </div>
+      </div>
+
+      <div className="w-[96%] max-h-[70vh] mt-4 mx-[2%] overflow-y-auto rounded-box border border-base-content/5 bg-base-100">
+        <table className="table table-zebra">
+          <thead>
+            <tr>
+              <th className="h-[6vh] w-[5.88vw]">Saat / Yer</th>
+              {HOURS.map((hour, index) => (
+                <th className="h-[6vh] w-[5.88vw]" key={index}>
+                  {hour}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {rooms.map((room) => (
+              <tr key={room.value}>
+                <td className="h-[6vh] text-center w-[5.88vw]">{room.label}</td>
+
+                {HOURS.map((_, hourIndex) => {
+                  const event = getEventForCell(room.label, hourIndex);
+                  return (
+                    <td
+                      className={`h-[6vh] w-[5.88vw] ${
+                        event?.is_exam ? "bg-red-100" : ""
+                      }`}
+                      key={hourIndex}
+                    >
+                      {event
+                        ? `${event.class} - ${event.instructor}`
+                        : "Müsait"}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
