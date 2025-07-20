@@ -19,7 +19,7 @@ body {
 }
 
 .rbc-event {
-  @apply border-none !important;
+  @apply border-none;
 }
 
 .rbc-today {
@@ -28,28 +28,28 @@ body {
 
 /* React Select styles */
 .react-select__control {
-  @apply border-gray-300 hover:border-gray-400 !important;
+  @apply border-gray-300 hover:border-gray-400;
 }
 
 .react-select__control--is-focused {
-  @apply border-blue-500 ring-1 ring-blue-500 !important;
+  @apply border-blue-500 ring-1 ring-blue-500;
 }
 
 .react-select__menu {
-  @apply z-50 !important;
+  @apply z-50;
 }
 
 /* Datepicker styles */
 .react-datepicker {
-  @apply border-gray-300 shadow-lg !important;
+  @apply border-gray-300 shadow-lg;
 }
 
 .react-datepicker__header {
-  @apply bg-gray-100 !important;
+  @apply bg-gray-100;
 }
 
 .react-datepicker__day--selected {
-  @apply bg-blue-500 !important;
+  @apply bg-blue-500;
 }
 
 /* Custom scrollbar */

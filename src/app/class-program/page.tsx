@@ -73,12 +73,11 @@ const ClassProgramPage = () => {
   // Fetch data
   const fetchData = useCallback(async () => {
     try {
-      const [classResponse, instructorsResponse, classRoomsResponse] =
-        await Promise.all([
-          API.getClasses(),
-          API.getInstructors(),
-          API.getClassRooms(),
-        ]);
+      const classResponse = await API.getClasses();
+      const instructorsResponse = await API.getInstructors();
+      const classRoomsResponse = await API.getClassRooms();
+
+      console.log(instructorsResponse);
 
       // Process instructors
       const instructorsData = instructorsResponse
