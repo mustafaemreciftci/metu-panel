@@ -511,7 +511,7 @@ export default function Class() {
             class: any;
             is_exam: boolean;
           }) => {
-            const classType = event.class.match(/(\d+)/)[0][0];
+            const classType = "1"; // event.class.match(/(\d+)/)[0][0];
 
             let newStyle;
 
