@@ -76,26 +76,30 @@ export default function Class() {
     const _instructorsResponse = await API.getInstructors();
     const _classRoomsResponse = await API.getClassRooms();
 
-    for (
-      let _instructorIndex = 0;
-      _instructorIndex < _instructorsResponse.length;
-      _instructorIndex++
-    ) {
-      instructors.push({
-        value: JSON.stringify(_instructorIndex),
-        label: _instructorsResponse[_instructorIndex].name,
-      });
+    if (_instructorsResponse) {
+      for (
+        let _instructorIndex = 0;
+        _instructorIndex < _instructorsResponse.length;
+        _instructorIndex++
+      ) {
+        instructors.push({
+          value: JSON.stringify(_instructorIndex),
+          label: _instructorsResponse[_instructorIndex].name,
+        });
+      }
     }
 
-    for (
-      let _classIndex = 0;
-      _classIndex < _classResponse.length;
-      _classIndex++
-    ) {
-      courses.push({
-        value: JSON.stringify(_classIndex),
-        label: _classResponse[_classIndex].name,
-      });
+    if (_classResponse) {
+      for (
+        let _classIndex = 0;
+        _classIndex < _classResponse.length;
+        _classIndex++
+      ) {
+        courses.push({
+          value: JSON.stringify(_classIndex),
+          label: _classResponse[_classIndex].name,
+        });
+      }
     }
 
     if (_classRoomsResponse) {

@@ -57,12 +57,14 @@ export default function Config() {
       const _instructorsObject: any = [];
       const _meetingRoomsObject: any = [];
 
-      for (
-        let _instructorIndex = 0;
-        _instructorIndex < _instructorsResponse.length;
-        _instructorIndex++
-      ) {
-        _instructorsArray.push(_instructorsResponse[_instructorIndex].name);
+      if (_instructorsResponse) {
+        for (
+          let _instructorIndex = 0;
+          _instructorIndex < _instructorsResponse.length;
+          _instructorIndex++
+        ) {
+          _instructorsArray.push(_instructorsResponse[_instructorIndex].name);
+        }
       }
 
       _instructorsArray.sort((a, b) => {
@@ -80,12 +82,14 @@ export default function Config() {
         });
       }
 
-      for (
-        let _classIndex = 0;
-        _classIndex < _classResponse.length;
-        _classIndex++
-      ) {
-        _coursesArray.push(_classResponse[_classIndex].name);
+      if (_classResponse) {
+        for (
+          let _classIndex = 0;
+          _classIndex < _classResponse.length;
+          _classIndex++
+        ) {
+          _coursesArray.push(_classResponse[_classIndex].name);
+        }
       }
 
       _coursesArray.sort((a, b) => {
@@ -104,17 +108,19 @@ export default function Config() {
       }
 
       if (_classRoomsResponse) {
-        for (
-          let _classRoomsIndex = 0;
-          _classRoomsIndex < _classRoomsResponse.length;
-          _classRoomsIndex++
-        ) {
-          _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
-        }
+        if (_classRoomsResponse) {
+          for (
+            let _classRoomsIndex = 0;
+            _classRoomsIndex < _classRoomsResponse.length;
+            _classRoomsIndex++
+          ) {
+            _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
+          }
 
-        _classRoomsArray.sort((a, b) => {
-          return a.toLowerCase().localeCompare(b.toLowerCase());
-        });
+          _classRoomsArray.sort((a, b) => {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+          });
+        }
       }
 
       for (
@@ -129,14 +135,16 @@ export default function Config() {
       }
 
       if (_meetingRoomsResponse) {
-        for (
-          let _meetingRoomsIndex = 0;
-          _meetingRoomsIndex < _meetingRoomsResponse.length;
-          _meetingRoomsIndex++
-        ) {
-          _meetingRoomsArray.push(
-            _meetingRoomsResponse[_meetingRoomsIndex].name
-          );
+        if (_meetingRoomsResponse) {
+          for (
+            let _meetingRoomsIndex = 0;
+            _meetingRoomsIndex < _meetingRoomsResponse.length;
+            _meetingRoomsIndex++
+          ) {
+            _meetingRoomsArray.push(
+              _meetingRoomsResponse[_meetingRoomsIndex].name
+            );
+          }
         }
       }
 
@@ -167,12 +175,14 @@ export default function Config() {
           const _coursesArray = [];
           const _coursesObject = [];
 
-          for (
-            let _classIndex = 0;
-            _classIndex < _classResponse.length;
-            _classIndex++
-          ) {
-            _coursesArray.push(_classResponse[_classIndex].name);
+          if (_classResponse) {
+            for (
+              let _classIndex = 0;
+              _classIndex < _classResponse.length;
+              _classIndex++
+            ) {
+              _coursesArray.push(_classResponse[_classIndex].name);
+            }
           }
 
           _coursesArray.sort((a, b) => {
@@ -235,12 +245,16 @@ export default function Config() {
           const _instructorsArray = [];
           const _instructorsObject = [];
 
-          for (
-            let _instructorIndex = 0;
-            _instructorIndex < _instructorsResponse.length;
-            _instructorIndex++
-          ) {
-            _instructorsArray.push(_instructorsResponse[_instructorIndex].name);
+          if (_instructorsResponse) {
+            for (
+              let _instructorIndex = 0;
+              _instructorIndex < _instructorsResponse.length;
+              _instructorIndex++
+            ) {
+              _instructorsArray.push(
+                _instructorsResponse[_instructorIndex].name
+              );
+            }
           }
 
           _instructorsArray.sort((a, b) => {
@@ -268,14 +282,16 @@ export default function Config() {
           const _meetingRoomsArray = [];
           const _meetingRoomsObject = [];
 
-          for (
-            let _meetingRoomsIndex = 0;
-            _meetingRoomsIndex < _meetingRoomsResponse.length;
-            _meetingRoomsIndex++
-          ) {
-            _meetingRoomsArray.push(
-              _meetingRoomsResponse[_meetingRoomsIndex].name
-            );
+          if (_meetingRoomsResponse) {
+            for (
+              let _meetingRoomsIndex = 0;
+              _meetingRoomsIndex < _meetingRoomsResponse.length;
+              _meetingRoomsIndex++
+            ) {
+              _meetingRoomsArray.push(
+                _meetingRoomsResponse[_meetingRoomsIndex].name
+              );
+            }
           }
 
           _meetingRoomsArray.sort((a, b) => {
