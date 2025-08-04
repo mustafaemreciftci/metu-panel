@@ -103,17 +103,19 @@ export default function Config() {
         });
       }
 
-      for (
-        let _classRoomsIndex = 0;
-        _classRoomsIndex < _classRoomsResponse.length;
-        _classRoomsIndex++
-      ) {
-        _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
-      }
+      if (_classRoomsResponse) {
+        for (
+          let _classRoomsIndex = 0;
+          _classRoomsIndex < _classRoomsResponse.length;
+          _classRoomsIndex++
+        ) {
+          _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
+        }
 
-      _classRoomsArray.sort((a, b) => {
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-      });
+        _classRoomsArray.sort((a, b) => {
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        });
+      }
 
       for (
         let _classRoomArrayIndex = 0;
@@ -126,12 +128,16 @@ export default function Config() {
         });
       }
 
-      for (
-        let _meetingRoomsIndex = 0;
-        _meetingRoomsIndex < _meetingRoomsResponse.length;
-        _meetingRoomsIndex++
-      ) {
-        _meetingRoomsArray.push(_meetingRoomsResponse[_meetingRoomsIndex].name);
+      if (_meetingRoomsResponse) {
+        for (
+          let _meetingRoomsIndex = 0;
+          _meetingRoomsIndex < _meetingRoomsResponse.length;
+          _meetingRoomsIndex++
+        ) {
+          _meetingRoomsArray.push(
+            _meetingRoomsResponse[_meetingRoomsIndex].name
+          );
+        }
       }
 
       _meetingRoomsArray.sort((a, b) => {
@@ -194,12 +200,14 @@ export default function Config() {
           const _classRoomsArray = [];
           const _classRoomsObject = [];
 
-          for (
-            let _classRoomsIndex = 0;
-            _classRoomsIndex < _classRoomsResponse.length;
-            _classRoomsIndex++
-          ) {
-            _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
+          if (_classRoomsResponse) {
+            for (
+              let _classRoomsIndex = 0;
+              _classRoomsIndex < _classRoomsResponse.length;
+              _classRoomsIndex++
+            ) {
+              _classRoomsArray.push(_classRoomsResponse[_classRoomsIndex].name);
+            }
           }
 
           _classRoomsArray.sort((a, b) => {

@@ -98,25 +98,27 @@ export default function Class() {
       });
     }
 
-    for (
-      let _classRoomsIndex = 0;
-      _classRoomsIndex < _classRoomsResponse.length;
-      _classRoomsIndex++
-    ) {
-      rooms.push({
-        value: JSON.stringify(_classRoomsIndex),
-        label: _classRoomsResponse[_classRoomsIndex].name,
-      });
+    if (_classRoomsResponse) {
+      for (
+        let _classRoomsIndex = 0;
+        _classRoomsIndex < _classRoomsResponse.length;
+        _classRoomsIndex++
+      ) {
+        rooms.push({
+          value: JSON.stringify(_classRoomsIndex),
+          label: _classRoomsResponse[_classRoomsIndex].name,
+        });
 
-      roomsExtra.push({
-        value: JSON.stringify(_classRoomsIndex),
-        label:
-          _classRoomsResponse[_classRoomsIndex].name +
-          " | Kapasite: " +
-          _classRoomsResponse[_classRoomsIndex].capacity +
-          ", Sınav Kapasitesi: " +
-          _classRoomsResponse[_classRoomsIndex].exam_capacity,
-      });
+        roomsExtra.push({
+          value: JSON.stringify(_classRoomsIndex),
+          label:
+            _classRoomsResponse[_classRoomsIndex].name +
+            " | Kapasite: " +
+            _classRoomsResponse[_classRoomsIndex].capacity +
+            ", Sınav Kapasitesi: " +
+            _classRoomsResponse[_classRoomsIndex].exam_capacity,
+        });
+      }
     }
   };
 

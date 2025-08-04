@@ -45,15 +45,17 @@ export default function Schedule() {
 
     const newRooms: any = [];
 
-    for (
-      let _classRoomsIndex = 0;
-      _classRoomsIndex < _classRoomsResponse.length;
-      _classRoomsIndex++
-    ) {
-      newRooms.push({
-        value: JSON.stringify(_classRoomsIndex),
-        label: _classRoomsResponse[_classRoomsIndex].name,
-      });
+    if (_classRoomsResponse) {
+      for (
+        let _classRoomsIndex = 0;
+        _classRoomsIndex < _classRoomsResponse.length;
+        _classRoomsIndex++
+      ) {
+        newRooms.push({
+          value: JSON.stringify(_classRoomsIndex),
+          label: _classRoomsResponse[_classRoomsIndex].name,
+        });
+      }
     }
 
     setRooms(newRooms);
