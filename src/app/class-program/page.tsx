@@ -124,7 +124,7 @@ export default function Class() {
     const _events = [];
     const response = await API.getClassEvents();
 
-    if (response.length > 0) {
+    if (response && response.length > 0) {
       for (let _event of response) {
         const daysInBetween = moment(_event.end_date).diff(
           _event.start_date,
