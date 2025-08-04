@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ComponentType } from "react";
+import React from "react";
 import moment from "moment";
 import ReactModal from "react-modal";
 import { toast } from "react-toastify";
@@ -384,6 +384,7 @@ export default function Class() {
   React.useEffect(() => {
     handleFilterEvents();
   }, [filterRoom, filterClass, filterInstructor]);
+
   const onSelectEvent = (event: { id: string; start: Date }) => {
     setEventDeleteID(event.id as any);
     setEventDeleteDate(moment(event.start).format("YYYY-MM-DD") as any);

@@ -21,6 +21,7 @@ import { API } from "@root/utils/API";
 import { colors } from "@root/utils/colors";
 
 // library styles
+import "react-datepicker/dist/react-datepicker.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const rooms: any = [];
@@ -42,8 +43,6 @@ export default function Room() {
 
   const [eventDeleteID, setEventDeleteID] = React.useState(null);
   const [eventDeleteDate, setEventDeleteDate] = React.useState<any>(null);
-  const [deleteEventModalVisible, setDeleteEventModalVisible] =
-    React.useState(false);
 
   const [room, setRoom] = React.useState(null);
   const [isMain, setIsMain] = React.useState(false);
@@ -284,11 +283,11 @@ export default function Room() {
     handleFilterEvents();
   }, [filterRoom, filterInstructor]);
 
-  const onSelectEvent = (event: any) => {
-    setEventDeleteID(event.id);
-    setEventDeleteDate(moment(event.start).format("YYYY-MM-DD"));
+  const onSelectEvent = (event: { id: string; start: Date }) => {
+    setEventDeleteID(event.id as any);
+    setEventDeleteDate(moment(event.start).format("YYYY-MM-DD") as any);
 
-    setDeleteEventModalVisible(true);
+    dialogRef1.current?.showModal();
   };
 
   if (loaded) {
@@ -383,8 +382,8 @@ export default function Room() {
           }}
           style={{ height: "76vh" }}
           onSelectEvent={onSelectEvent}
-          eventPropGetter={(event) => {
-            const roomType = event.room[0];
+          eventPropGetter={(event: any) => {
+            const roomType = "D"; // event.room[0];
 
             let newStyle;
 
@@ -661,7 +660,7 @@ export default function Room() {
 
                         handleMeetingEvents();
 
-                        setDeleteEventModalVisible(false);
+                        //
                       } else {
                         toast.error(
                           "Tek seferlik işlemlerde tarihler aynı gün olmalıdır!",
@@ -693,7 +692,7 @@ export default function Room() {
 
                       handleMeetingEvents();
 
-                      setDeleteEventModalVisible(false);
+                      //
                     }
                   }
                 }}
