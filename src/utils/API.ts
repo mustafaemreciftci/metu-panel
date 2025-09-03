@@ -756,30 +756,60 @@ export const API = {
   /* auth start */
   login: async (email: any, password: any) => {
     try {
-      const result = await axios.post("https://apimynos.cc.metu.edu.tr/login", {
-        headers: {
-          "Content-Type": "application/json",
+      console.log("Making login request to API");
+      console.log("Request data:", { email, password: "***" });
+
+      const result = await axios.post(
+        "https://apimynos.cc.metu.edu.tr/login",
+        {
+          data: {
+            email,
+            password,
+          },
         },
-        data: {
-          email,
-          password,
-        },
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 10000, // 10 second timeout
+          withCredentials: true,
+        }
+      );
+
+      console.log("Login API response:", result.data);
+      console.log("Login API status:", result.status);
 
       return result.data;
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Login API error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      console.error("Error message:", error.message);
 
-      toast.error("Hata! Lütfen tekrar deneyin.", {
-        theme: "light",
-        autoClose: 3000,
-        draggable: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        progress: undefined,
-        hideProgressBar: false,
-        position: "bottom-center",
-      });
+      if (
+        error.code === "NETWORK_ERROR" ||
+        error.message.includes("Network Error")
+      ) {
+        throw new Error(
+          "Ağ bağlantısı hatası - İnternet bağlantınızı kontrol edin"
+        );
+      }
+
+      if (error.code === "TIMEOUT" || error.code === "ECONNABORTED") {
+        throw new Error("Bağlantı zaman aşımı - Tekrar deneyin");
+      }
+
+      if (error.response?.status === 401) {
+        throw new Error("Kullanıcı adı veya şifre hatalı");
+      }
+
+      if (error.response?.status >= 500) {
+        throw new Error("Sunucu hatası - Daha sonra tekrar deneyin");
+      }
+
+      throw new Error(
+        error.response?.data?.message || error.message || "Bilinmeyen hata"
+      );
     }
   },
 
