@@ -128,24 +128,24 @@ export default function ClassSchedule() {
 
   if (loaded) {
     return (
-      <div className="w-[88vw] pl-[14vw] bg-white min-h-screen">
+      <div className="w-full md:w-[88vw] md:pl-[14vw] bg-white min-h-screen">
         <Sidebar />
 
-        {/* Header exactly like the image */}
-        <div className="px-6 py-8">
-          <div className="flex items-center justify-between">
+        {/* Header - responsive */}
+        <div className="px-4 md:px-6 py-6 md:py-8 pt-16 md:pt-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
             <div className="flex flex-col">
-              <h2 style={{ fontSize: 24 }} className="text-gray-500 mb-2">
+              <h2 className="text-lg md:text-2xl text-gray-500 mb-2">
                 Sınıf Takvimi
               </h2>
               <div className="flex items-center space-x-4">
-                <h1 style={{ fontSize: 44 }} className="font-bold text-black">
+                <h1 className="text-2xl md:text-4xl font-bold text-black">
                   {moment(currentDate).format("D MMMM dddd")}
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center md:justify-end space-x-2">
               <button
                 className="p-2 hover:bg-gray-100 rounded"
                 onClick={() => {
@@ -170,7 +170,7 @@ export default function ClassSchedule() {
                 </svg>
               </button>
               <button
-                className="text-md px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 font-bold"
+                className="text-sm md:text-md px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 font-bold"
                 onClick={() => setCurrentDate(new Date())}
               >
                 Bugün
@@ -200,74 +200,121 @@ export default function ClassSchedule() {
           </div>
         </div>
 
-        {/* Clean Timetable exactly like the image */}
-        <div className="px-6">
-          <div className="w-full">
-            <table className="w-full">
-              {/* Header Row */}
-              <thead>
-                <tr className="border-b border-gray-300">
-                  <th className="text-left p-3 font-semibold text-gray-700 w-32">
-                    Sınıf
-                  </th>
-                  {timeSlots.map((timeSlot) => (
-                    <th
-                      key={timeSlot}
-                      className="text-center p-3 font-semibold text-gray-700 min-w-[100px]"
-                    >
-                      {timeSlot}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              {/* Room Rows */}
-              <tbody>
-                {rooms.map((room: any, roomIndex: number) => (
-                  <tr key={room.name} className="border-b border-gray-300">
-                    {/* Room Name */}
-                    <td className="p-3 font-medium text-red-600">
-                      {room.name}
-                    </td>
-
-                    {/* Time Slots */}
-                    {timeSlots.map((timeSlot) => {
-                      const event = getEventForSlot(timeSlot, room.name);
-
-                      return (
-                        <td
-                          key={`${room.name}-${timeSlot}`}
-                          className="p-3 text-center h-16"
-                        >
-                          {event ? (
-                            event.is_exam ? (
-                              <div className="bg-red-600 text-white text-xs px-2 py-1 rounded font-medium">
-                                {event.class?.substring(0, 6) || "EEE221"}
-                              </div>
-                            ) : (
-                              <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded font-medium">
-                                {event.class?.substring(0, 6) || "EEE301"}
-                              </div>
-                            )
-                          ) : (
-                            <div className="bg-[#F0F0F0] text-[#878787] text-xs px-2 py-1 rounded font-medium">
-                              Müsait
+        {/* Responsive Timetable */}
+        <div className="px-4 md:px-6">
+          {/* Mobile Layout - Cards */}
+          <div className="md:hidden space-y-4">
+            {rooms.map((room: any) => (
+              <div
+                key={room.name}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold text-red-600 mb-3">
+                  {room.name}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {timeSlots.map((timeSlot) => {
+                    const event = getEventForSlot(timeSlot, room.name);
+                    return (
+                      <div
+                        key={`${room.name}-${timeSlot}`}
+                        className="flex flex-col items-center p-2 rounded"
+                      >
+                        <div className="text-xs text-gray-600 mb-1">
+                          {timeSlot}
+                        </div>
+                        {event ? (
+                          event.is_exam ? (
+                            <div className="bg-red-600 text-white text-xs px-2 py-1 rounded font-medium w-full text-center">
+                              {event.class?.substring(0, 6) || "EEE221"}
                             </div>
-                          )}
-                        </td>
-                      );
-                    })}
+                          ) : (
+                            <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded font-medium w-full text-center">
+                              {event.class?.substring(0, 6) || "EEE301"}
+                            </div>
+                          )
+                        ) : (
+                          <div className="bg-[#F0F0F0] text-[#878787] text-xs px-2 py-1 rounded font-medium w-full text-center">
+                            Müsait
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Layout - Table */}
+          <div className="hidden md:block">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full">
+                {/* Header Row */}
+                <thead>
+                  <tr className="border-b border-gray-300">
+                    <th className="text-left p-3 font-semibold text-gray-700 w-32">
+                      Sınıf
+                    </th>
+                    {timeSlots.map((timeSlot) => (
+                      <th
+                        key={timeSlot}
+                        className="text-center p-3 font-semibold text-gray-700 min-w-[100px]"
+                      >
+                        {timeSlot}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                {/* Room Rows */}
+                <tbody>
+                  {rooms.map((room: any, roomIndex: number) => (
+                    <tr key={room.name} className="border-b border-gray-300">
+                      {/* Room Name */}
+                      <td className="p-3 font-medium text-red-600">
+                        {room.name}
+                      </td>
+
+                      {/* Time Slots */}
+                      {timeSlots.map((timeSlot) => {
+                        const event = getEventForSlot(timeSlot, room.name);
+
+                        return (
+                          <td
+                            key={`${room.name}-${timeSlot}`}
+                            className="p-3 text-center h-16"
+                          >
+                            {event ? (
+                              event.is_exam ? (
+                                <div className="bg-red-600 text-white text-xs px-2 py-1 rounded font-medium">
+                                  {event.class?.substring(0, 6) || "EEE221"}
+                                </div>
+                              ) : (
+                                <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded font-medium">
+                                  {event.class?.substring(0, 6) || "EEE301"}
+                                </div>
+                              )
+                            ) : (
+                              <div className="bg-[#F0F0F0] text-[#878787] text-xs px-2 py-1 rounded font-medium">
+                                Müsait
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     );
   } else {
     return (
-      <div className="w-[88vw] h-[100vh] pl-[14vw]">
+      <div className="w-full md:w-[88vw] h-[100vh] md:pl-[14vw]">
         <Sidebar />
         <div className="h-[88vh] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
