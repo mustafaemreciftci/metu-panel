@@ -30,31 +30,31 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="h-[86vh] md:min-h-[100vh] bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* University Image */}
-        <Image
-          priority
-          width={400}
-          height={300}
-          alt="login-banner"
-          className="w-200 h-60"
-          src={"/images/login-banner.jpg"}
-        />
+        {/* University Image - responsive */}
+        <div className="relative h-48 md:h-60 w-full">
+          <Image
+            priority
+            fill
+            alt="login-banner"
+            className="object-cover"
+            src={"/images/login-banner.jpg"}
+          />
+        </div>
 
-        {/* Form Content */}
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-xl text-[#878787] mb-2">
+        {/* Form Content - responsive padding */}
+        <div className="p-6 md:p-8">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-lg md:text-xl text-[#878787] mb-2">
               Sınıf Takvim Portalı
             </h1>
-            <h2 className="text-4xl font-bold text-black">Giriş</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-black">Giriş</h2>
           </div>
 
           <form
             onSubmit={(e) => {
               e.preventDefault();
-
               handleLogin();
             }}
           >
