@@ -20,6 +20,7 @@ export default function Config() {
   const router = useRouter();
 
   const [loaded, setLoaded] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
   const [modalType, setModalType] = React.useState("");
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -340,6 +341,15 @@ export default function Config() {
     handleData();
   }, []);
 
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
   if (loaded) {
     return (
       <div className="w-full md:w-[88vw] md:pl-[14vw] bg-white min-h-screen">
@@ -529,7 +539,7 @@ export default function Config() {
                 <select
                   value={selectedDataType}
                   onChange={(e) => setSelectedDataType(e.target.value)}
-                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                 >
                   <option value="">Ör: Hoca</option>
                   <option value="instructor">Hoca</option>
@@ -618,7 +628,7 @@ export default function Config() {
                   </label>
                   <input
                     type="text"
-                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                     placeholder="Hocanın tam adı"
                     onChange={(value) => setInstructorName(value.target.value)}
                   />
@@ -632,7 +642,7 @@ export default function Config() {
                   </label>
                   <input
                     type="text"
-                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                     placeholder="Dersin adı"
                     onChange={(value) => setClassName(value.target.value)}
                   />
@@ -647,7 +657,7 @@ export default function Config() {
                     </label>
                     <input
                       type="text"
-                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                       placeholder="Sınıf adı"
                       onChange={(value) => setClassRoomName(value.target.value)}
                     />
@@ -658,7 +668,7 @@ export default function Config() {
                     </label>
                     <input
                       type="text"
-                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                       placeholder="Sınıf kapasitesi"
                       onChange={(value) =>
                         setClassRoomCapacity(value.target.value)
@@ -671,7 +681,7 @@ export default function Config() {
                     </label>
                     <input
                       type="text"
-                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                       placeholder="Sınıf sınav kapasitesi"
                       onChange={(value) =>
                         setClassRoomExamCapacity(value.target.value)
@@ -689,7 +699,7 @@ export default function Config() {
                     </label>
                     <input
                       type="text"
-                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                       placeholder="Toplantı odası adı"
                       onChange={(value) =>
                         setMeetingRoomName(value.target.value)
@@ -702,7 +712,7 @@ export default function Config() {
                     </label>
                     <input
                       type="text"
-                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                       placeholder="Toplantı odası kapasitesi"
                       onChange={(value) =>
                         setMeetingRoomCapacity(value.target.value)

@@ -35,6 +35,7 @@ export default function Class() {
   const router = useRouter();
 
   const [loaded, setLoaded] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
   const [filterRoom, setFilterRoom] = React.useState(null);
   const [filterClass, setFilterClass] = React.useState(null);
@@ -393,6 +394,15 @@ export default function Class() {
   const [currentView, setCurrentView] = React.useState("month");
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [showFilters, setShowFilters] = React.useState(false);
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (loaded) {
     return (

@@ -10,24 +10,42 @@ export default function Login() {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogin = async () => {
     setLoading(true);
 
     try {
+      alert(`Starting login attempt for: ${username}`);
+
       const response = await API.login(username, password);
 
-      if (response.success || response === "success") {
-        router.push("/class-program");
-      }
+      alert(`Login response received: ${JSON.stringify(response)}`);
 
-      console.log(response);
+      if (response === "success") {
+        alert("Login successful, redirecting...");
+        router.push("/class-program");
+      } else {
+        alert("Login failed with response: " + (response || "No response"));
+      }
     } catch (error) {
-      console.error("Login failed:", error);
+      alert(
+        "Login error: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="h-[86vh] md:min-h-[100vh] bg-gray-100 flex items-center justify-center p-4">
@@ -65,7 +83,7 @@ export default function Login() {
                   placeholder="Kullanıcı kodu"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
@@ -76,7 +94,7 @@ export default function Login() {
                   placeholder="Şifre"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>

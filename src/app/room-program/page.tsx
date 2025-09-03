@@ -34,6 +34,7 @@ export default function Room() {
   const router = useRouter();
 
   const [loaded, setLoaded] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
   const [filterRoom, setFilterRoom] = React.useState(null);
   const [filterInstructor, setFilterInstructor] = React.useState(null);
@@ -291,6 +292,15 @@ export default function Room() {
   const [currentView, setCurrentView] = React.useState("month");
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [showFilters, setShowFilters] = React.useState(false);
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (loaded) {
     return (
@@ -815,7 +825,7 @@ export default function Room() {
                   Açıklama
                 </label>
                 <input
-                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                   onChange={(data) => setUpdateDescription(data.target.value)}
                   placeholder="Açıklama"
                 />
@@ -1157,7 +1167,7 @@ export default function Room() {
                   Açıklama
                 </label>
                 <input
-                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-base focus:outline-none"
                   onChange={(data) => setDescription(data.target.value)}
                   placeholder="Açıklama"
                 />
