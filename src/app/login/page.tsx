@@ -17,7 +17,7 @@ export default function Login() {
     try {
       const response = await API.login(username, password);
 
-      if (response === "success") {
+      if (response.success) {
         router.push("/class-program");
       }
 
