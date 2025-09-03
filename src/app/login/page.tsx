@@ -21,23 +21,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      alert(`Starting login attempt for: ${username}`);
-
       const response = await API.login(username, password);
 
-      alert(`Login response received: ${JSON.stringify(response)}`);
-
       if (response === "success") {
-        alert("Login successful, redirecting...");
         router.push("/class-program");
       } else {
-        alert("Login failed with response: " + (response || "No response"));
       }
     } catch (error) {
-      alert(
-        "Login error: " +
-          (error instanceof Error ? error.message : "Unknown error")
-      );
     } finally {
       setLoading(false);
     }
