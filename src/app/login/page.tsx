@@ -1,71 +1,97 @@
 "use client";
 
 import React from "react";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-
-// utils
 import { API } from "@root/utils/API";
+import Image from "next/image";
 
 export default function Login() {
   const router = useRouter();
-
-  const [email, setEmail] = React.useState("");
+  const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
-  const handleAuth = async () => {
-    const res = await API.handleAuth();
+  const handleLogin = async () => {
+    setLoading(true);
 
-    if (res.loggedIn !== false) {
-      router.push("/class-program");
+    try {
+      const response = await API.login(username, password);
+
+      if (response === "success") {
+        router.push("/class-program");
+      }
+
+      console.log(response);
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  React.useEffect(() => {
-    handleAuth();
-  }, []);
-
   return (
-    <div className="gap-[12px] h-[100vh] flex flex-col items-center justify-center">
-      <input
-        type="text"
-        value={email}
-        placeholder="Mail adresi"
-        className="input focus:outline-0"
-        onChange={(value) => setEmail(value.target.value)}
-      />
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* University Image */}
+        <Image
+          priority
+          width={400}
+          height={300}
+          alt="login-banner"
+          className="w-200 h-60"
+          src={"/images/login-banner.jpg"}
+        />
 
-      <input
-        type="password"
-        value={password}
-        placeholder="Şifre"
-        className="input focus:outline-0"
-        onChange={(value) => setPassword(value.target.value)}
-      />
+        {/* Form Content */}
+        <div className="p-8">
+          <div className="mb-8">
+            <h1 className="text-xl text-[#878787] mb-2">
+              Sınıf Takvim Portalı
+            </h1>
+            <h2 className="text-4xl font-bold text-black">Giriş</h2>
+          </div>
 
-      <button
-        onClick={async () => {
-          const authStatus = await API.login(email, password);
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
 
-          if (authStatus === "invalid") {
-            toast.info("Yanlış email veya şifre.", {
-              theme: "light",
-              autoClose: 3000,
-              draggable: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              progress: undefined,
-              hideProgressBar: false,
-              position: "bottom-center",
-            });
-          } else if (authStatus === "success") {
-            router.push("/class-program");
-          }
-        }}
-        className="btn btn-wide btn-primary mt-8"
-      >
-        Giriş Yap
-      </button>
+              handleLogin();
+            }}
+          >
+            <div className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  placeholder="Kullanıcı kodu"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <input
+                  type="password"
+                  placeholder="Şifre"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-100 border-none rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-teal-500 text-white py-3 rounded-md font-medium hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? "Giriş yapılıyor..." : "Giriş yap"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
+import React from "react";
+import ReactModal from "react-modal";
 import { IoMdClose } from "react-icons/io";
 import { FaRegSave } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import React, { useRef, useState } from "react";
 import { OrbitProgress } from "react-loading-indicators";
 
 // components
-import Header from "@root/components/Header";
+import Sidebar from "@root/components/Sidebar";
 
 // utils
 import { API } from "@root/utils/API";
@@ -21,6 +22,10 @@ export default function Config() {
   const [loaded, setLoaded] = React.useState(false);
 
   const [modalType, setModalType] = React.useState("");
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [dataTypeModalVisible, setDataTypeModalVisible] = React.useState(false);
+
+  const [selectedDataType, setSelectedDataType] = React.useState("");
 
   const [className, setClassName] = React.useState("");
 
@@ -335,362 +340,423 @@ export default function Config() {
     handleData();
   }, []);
 
-  const [category, setCategory] = useState("Hoca");
-
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   if (loaded) {
     return (
-      <div className="w-full h-full flex flex-col justify-center">
-        <Header />
+      <div className="w-full md:w-[88vw] md:pl-[14vw] bg-white min-h-screen">
+        <Sidebar />
 
-        <fieldset className="fieldset self-start ml-10 mt-4">
-          <legend className="fieldset-legend">Kategoriler</legend>
+        {/* Header - responsive */}
+        <div className="px-4 md:px-6 py-8 md:py-16 pt-16 md:pt-16">
+          <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+            <div className="flex items-center space-x-6">
+              <h1 className="text-2xl md:text-4xl font-bold text-black">
+                Veriler
+              </h1>
+            </div>
 
-          <select
-            onChange={(event) => setCategory(event.target.value)}
-            defaultValue="Hoca"
-            className="select"
-          >
-            <option>Hoca</option>
-            <option>Ders</option>
-            <option>Sınıf</option>
-            <option>Toplantı Odası</option>
-          </select>
-        </fieldset>
-
-        <div className="w-[96%] max-h-[60vh] mt-4 ml-[2%] mr-[2%] overflow-y-auto rounded-box border border-base-content/5 bg-base-100">
-          <table className="table table-zebra">
-            <thead>
-              <tr>
-                <th>İsim</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {category === "Hoca" ? (
-                <>
-                  {instructors.map((instructor: any, index: number) => {
-                    return (
-                      <tr key={index}>
-                        <td>{instructor.label}</td>
-
-                        <td>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={async () => {
-                              await API.deleteInstructor(instructor.label);
-
-                              handleData("instructors");
-                            }}
-                          >
-                            Sil
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </>
-              ) : category === "Ders" ? (
-                <>
-                  {courses.map((course: any, index: number) => {
-                    return (
-                      <tr key={index}>
-                        <td>{course.label}</td>
-
-                        <td>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={async () => {
-                              await API.deleteInstructor(course.label);
-
-                              handleData("courses");
-                            }}
-                          >
-                            Sil
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </>
-              ) : category === "Sınıf" ? (
-                <>
-                  {classRooms.map((classRoom: any, index: number) => {
-                    return (
-                      <tr key={index}>
-                        <td>{classRoom.label}</td>
-
-                        <td>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={async () => {
-                              await API.deleteInstructor(classRoom.label);
-
-                              handleData("classRooms");
-                            }}
-                          >
-                            Sil
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </>
-              ) : (
-                <>
-                  {meetingRooms.map((meetingRoom: any, index: number) => {
-                    return (
-                      <tr key={index}>
-                        <td>{meetingRoom.label}</td>
-
-                        <td>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={async () => {
-                              await API.deleteInstructor(meetingRoom.label);
-
-                              handleData("meetingRoom");
-                            }}
-                          >
-                            Sil
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </>
-              )}
-            </tbody>
-          </table>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setDataTypeModalVisible(true)}
+                className="text-sm bg-[#22C2BA] text-white px-4 py-2 rounded-xl w-full md:w-auto"
+              >
+                + Veri Ekle
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={async () => {
-            switch (category) {
-              case "Hoca":
-                setModalType("instructor");
-
-                dialogRef.current?.showModal();
-
-                break;
-
-              case "Ders":
-                setModalType("class");
-
-                dialogRef.current?.showModal();
-
-                break;
-
-              case "Sınıf":
-                setModalType("classRoom");
-
-                dialogRef.current?.showModal();
-
-                break;
-
-              case "Toplantı Odası":
-                setModalType("meetingRoom");
-
-                dialogRef.current?.showModal();
-
-                break;
-            }
-          }}
-          className="btn btn-wide btn-primary ml-8 mt-8"
-        >
-          Ekle
-        </button>
-
-        <dialog ref={dialogRef} className="modal">
-          <div className="modal-box w-[40vw] h-[40vh]">
-            {modalType === "instructor" ? (
-              <div className="pl-[5%]">
-                <div className="flex pr-[5%] flex-row justify-between">
-                  <h2>Hoca Ekle</h2>
-
-                  <button
-                    className="border-none text-2xl bg-white"
-                    onClick={() => dialogRef.current?.close()}
+        {/* Main Content - responsive grid */}
+        <div className="px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-20">
+            {/* Hocalar Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#878787] mb-4 border-b border-b-[#878787] pb-2">
+                Hocalar
+              </h3>
+              <div className="space-y-2">
+                {instructors.map((instructor: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 border-b border-b-[#878787] pb-4"
                   >
-                    <IoMdClose />
-                  </button>
-                </div>
-
-                <div style={{ height: 30 }} />
-
-                <input
-                  type="text"
-                  className="input focus:outline-0"
-                  placeholder="Hocanın tam adı"
-                  onChange={(value) => setInstructorName(value.target.value)}
-                />
-
-                <button
-                  onClick={async () => {
-                    await API.addInstructor(instructorName);
-
-                    handleData("instructors");
-                  }}
-                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
-                >
-                  <FaRegSave color="white" size={20} />
-                </button>
-              </div>
-            ) : modalType === "classRoom" ? (
-              <div className="pl-[5%]">
-                <div className="flex pr-[5%] flex-row justify-between">
-                  <h2>Sınıf Ekle</h2>
-
-                  <button
-                    className="border-none text-2xl bg-white"
-                    onClick={() => dialogRef.current?.close()}
-                  >
-                    <IoMdClose />
-                  </button>
-                </div>
-
-                <div style={{ height: 30 }} />
-
-                <input
-                  type="text"
-                  className="input focus:outline-0"
-                  onChange={(value) => setClassRoomName(value.target.value)}
-                  placeholder="Sınıf adı"
-                />
-
-                <div style={{ height: 15 }} />
-
-                <input
-                  type="text"
-                  className="input focus:outline-0"
-                  onChange={(value) => setClassRoomCapacity(value.target.value)}
-                  placeholder="Sınıf kapasitesi"
-                />
-
-                <div style={{ height: 15 }} />
-
-                <input
-                  type="text"
-                  className="input focus:outline-0"
-                  onChange={(value) =>
-                    setClassRoomExamCapacity(value.target.value)
-                  }
-                  placeholder="Sınıf sınav kapasitesi"
-                />
-
-                <button
-                  onClick={async () => {
-                    await API.addClassRoom(
-                      classRoomName,
-                      classRoomCapacity,
-                      classRoomExamCapacity
-                    );
-
-                    handleData("classRooms");
-                  }}
-                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
-                >
-                  <FaRegSave color="white" size={20} />
-                </button>
-              </div>
-            ) : modalType === "class" ? (
-              <div className="pl-[5%]">
-                <div className="flex pr-[5%] flex-row justify-between">
-                  <h2>Ders Ekle</h2>
-
-                  <button
-                    className="border-none text-2xl bg-white"
-                    onClick={() => dialogRef.current?.close()}
-                  >
-                    <IoMdClose />
-                  </button>
-                </div>
-
-                <div style={{ height: 30 }} />
-
-                <input
-                  type="text"
-                  placeholder="Dersin adı"
-                  className="input focus:outline-0"
-                  onChange={(value) => setClassName(value.target.value)}
-                />
-
-                <button
-                  onClick={async () => {
-                    await API.addClass(className);
-
-                    handleData("courses");
-                  }}
-                  className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
-                >
-                  <FaRegSave color="white" size={20} />
-                </button>
-              </div>
-            ) : (
-              modalType === "meetingRoom" && (
-                <div className="pl-[5%]">
-                  <div className="flex pr-[5%] flex-row justify-between">
-                    <h2>Toplantı Odası Ekle</h2>
-
+                    <span className="text-sm text-gray-900 flex-1 mr-2">
+                      {instructor.label}
+                    </span>
                     <button
-                      className="border-none text-2xl bg-white"
-                      onClick={() => dialogRef.current?.close()}
+                      className="text-red-500 text-sm font-bold whitespace-nowrap"
+                      onClick={async () => {
+                        await API.deleteInstructor(instructor.label);
+                        handleData("instructors");
+                      }}
                     >
-                      <IoMdClose />
+                      Sil
                     </button>
                   </div>
+                ))}
+              </div>
+            </div>
 
-                  <div style={{ height: 30 }} />
+            {/* Dersler Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#878787] mb-4 border-b border-b-[#878787] pb-2">
+                Dersler
+              </h3>
+              <div className="space-y-2">
+                {courses.map((course: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 border-b border-b-[#878787] pb-4"
+                  >
+                    <span className="text-sm text-gray-900 flex-1 mr-2">
+                      {course.label}
+                    </span>
+                    <button
+                      className="text-red-500 text-sm font-bold whitespace-nowrap"
+                      onClick={async () => {
+                        await API.deleteClass(course.label);
+                        handleData("courses");
+                      }}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
+            {/* Sınıf Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#878787] mb-4 border-b border-b-[#878787] pb-2">
+                Sınıf
+              </h3>
+              <div className="space-y-2">
+                {classRooms.map((classRoom: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 border-b border-b-[#878787] pb-4"
+                  >
+                    <span className="text-sm text-gray-900 flex-1 mr-2">
+                      {classRoom.label}
+                    </span>
+                    <button
+                      className="text-red-500 text-sm font-bold whitespace-nowrap"
+                      onClick={async () => {
+                        await API.deleteClassRoom(classRoom.label);
+                        handleData("classRooms");
+                      }}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Toplantı Odası Column */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#878787] mb-4 border-b border-b-[#878787] pb-2">
+                Toplantı Odası
+              </h3>
+              <div className="space-y-2">
+                {meetingRooms.map((meetingRoom: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 border-b border-b-[#878787] pb-4"
+                  >
+                    <span className="text-sm text-gray-900 flex-1 mr-2">
+                      {meetingRoom.label}
+                    </span>
+                    <button
+                      className="text-red-500 text-sm font-bold whitespace-nowrap"
+                      onClick={async () => {
+                        await API.deleteMeetingRoom(meetingRoom.label);
+                        handleData("meetingRooms");
+                      }}
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Type Selection Modal - responsive */}
+        <ReactModal
+          style={{
+            overlay: {
+              zIndex: 99,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+            },
+            content: {
+              top: "50%",
+              left: "50%",
+              right: "auto",
+              bottom: "auto",
+              marginRight: "-50%",
+              transform: "translate(-50%, -50%)",
+              width: "min(500px, 95vw)",
+              height: "min(400px, 85vh)",
+              backgroundColor: "white",
+              borderRadius: "12px",
+              border: "none",
+              padding: "20px",
+              overflow: "auto",
+            },
+          }}
+          ariaHideApp={false}
+          isOpen={dataTypeModalVisible}
+        >
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg md:text-xl font-semibold text-black">
+                Veri ekleme
+              </h2>
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setDataTypeModalVisible(false)}
+              >
+                <IoMdClose size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-black">
+                  Veri türü
+                </label>
+                <select
+                  value={selectedDataType}
+                  onChange={(e) => setSelectedDataType(e.target.value)}
+                  className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                >
+                  <option value="">Ör: Hoca</option>
+                  <option value="instructor">Hoca</option>
+                  <option value="class">Ders</option>
+                  <option value="classRoom">Sınıf</option>
+                  <option value="meetingRoom">Toplantı Odası</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => {
+                  if (selectedDataType) {
+                    setModalType(selectedDataType);
+                    setDataTypeModalVisible(false);
+                    setModalVisible(true);
+                  }
+                }}
+                disabled={!selectedDataType}
+                className={`text-white px-6 py-3 rounded-lg flex items-center space-x-2 w-full md:w-auto justify-center ${
+                  selectedDataType
+                    ? "bg-[#22C2BA] hover:bg-[#1da39a]"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <span>+ Veri Ekle</span>
+              </button>
+            </div>
+          </div>
+        </ReactModal>
+
+        {/* Add Modal - responsive */}
+        <ReactModal
+          style={{
+            overlay: {
+              zIndex: 99,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+            },
+            content: {
+              top: "50%",
+              left: "50%",
+              right: "auto",
+              bottom: "auto",
+              marginRight: "-50%",
+              transform: "translate(-50%, -50%)",
+              width: "min(600px, 95vw)",
+              height: "min(600px, 90vh)",
+              backgroundColor: "white",
+              borderRadius: "12px",
+              border: "none",
+              padding: "20px",
+              overflow: "auto",
+            },
+          }}
+          ariaHideApp={false}
+          isOpen={modalVisible}
+        >
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg md:text-xl font-semibold text-black">
+                {modalType === "instructor"
+                  ? "Hoca Ekle"
+                  : modalType === "classRoom"
+                  ? "Sınıf Ekle"
+                  : modalType === "class"
+                  ? "Ders Ekle"
+                  : "Toplantı Odası Ekle"}
+              </h2>
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  setModalVisible(false);
+                  setSelectedDataType("");
+                }}
+              >
+                <IoMdClose size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-3 md:space-y-4">
+              {modalType === "instructor" && (
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-black">
+                    Hoca Adı
+                  </label>
                   <input
                     type="text"
-                    className="input focus:outline-0"
-                    onChange={(value) => setMeetingRoomName(value.target.value)}
-                    placeholder="Toplantı odası adı"
+                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                    placeholder="Hocanın tam adı"
+                    onChange={(value) => setInstructorName(value.target.value)}
                   />
+                </div>
+              )}
 
-                  <div style={{ height: 15 }} />
-
+              {modalType === "class" && (
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-black">
+                    Ders Adı
+                  </label>
                   <input
                     type="text"
-                    className="input focus:outline-0"
-                    onChange={(value) =>
-                      setMeetingRoomCapacity(value.target.value)
-                    }
-                    placeholder="Toplantı odası kapasitesi"
+                    className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                    placeholder="Dersin adı"
+                    onChange={(value) => setClassName(value.target.value)}
                   />
+                </div>
+              )}
 
-                  <button
-                    onClick={async () => {
+              {modalType === "classRoom" && (
+                <>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-black">
+                      Sınıf Adı
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      placeholder="Sınıf adı"
+                      onChange={(value) => setClassRoomName(value.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-black">
+                      Kapasite
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      placeholder="Sınıf kapasitesi"
+                      onChange={(value) =>
+                        setClassRoomCapacity(value.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-black">
+                      Sınav Kapasitesi
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      placeholder="Sınıf sınav kapasitesi"
+                      onChange={(value) =>
+                        setClassRoomExamCapacity(value.target.value)
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {modalType === "meetingRoom" && (
+                <>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-black">
+                      Oda Adı
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      placeholder="Toplantı odası adı"
+                      onChange={(value) =>
+                        setMeetingRoomName(value.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-black">
+                      Kapasite
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full h-12 px-3 bg-[#F5F5F5] border-none rounded-md text-sm focus:outline-none"
+                      placeholder="Toplantı odası kapasitesi"
+                      onChange={(value) =>
+                        setMeetingRoomCapacity(value.target.value)
+                      }
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={async () => {
+                  switch (modalType) {
+                    case "instructor":
+                      await API.addInstructor(instructorName);
+                      handleData("instructors");
+                      break;
+                    case "class":
+                      await API.addClass(className);
+                      handleData("courses");
+                      break;
+                    case "classRoom":
+                      await API.addClassRoom(
+                        classRoomName,
+                        classRoomCapacity,
+                        classRoomExamCapacity
+                      );
+                      handleData("classRooms");
+                      break;
+                    case "meetingRoom":
                       await API.addMeetingRoom(
                         meetingRoomName,
                         meetingRoomCapacity
                       );
-
                       handleData("meetingRooms");
-                    }}
-                    className="w-14 h-14 right-8 bottom-6 flex items-center justify-center border-none overflow-hidden rounded-full absolute bg-[#c00000]"
-                  >
-                    <FaRegSave color="white" size={20} />
-                  </button>
-                </div>
-              )
-            )}
+                      break;
+                  }
+                  setModalVisible(false);
+                  setSelectedDataType("");
+                }}
+                className="bg-[#22C2BA] text-white px-6 py-3 rounded-lg hover:bg-[#1da39a] flex items-center space-x-2 w-full md:w-auto justify-center"
+              >
+                <span>+ Kaydet</span>
+              </button>
+            </div>
           </div>
-
-          <form method="dialog" className="modal-backdrop">
-            <button>close</button>
-          </form>
-        </dialog>
+        </ReactModal>
       </div>
     );
   } else {
     return (
-      <div className="fw-[100vw] h-[100vh]">
-        <Header />
-
+      <div className="w-full md:w-[88vw] h-[100vh] md:pl-[14vw]">
+        <Sidebar />
         <div className="h-[88vh] flex items-center justify-center">
           <OrbitProgress color={colors.metu_red} size="small" />
         </div>
